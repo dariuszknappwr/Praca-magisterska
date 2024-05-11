@@ -8,6 +8,9 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import deque
+from networkx.algorithms.shortest_paths.weighted import single_source_dijkstra
+import matplotlib.colors as mcolors
+
 
 
 # Define a function to calculate time from distance and speed
@@ -288,57 +291,71 @@ def manhattan_heuristic(coord1, coord2):
     (x1, y1), (x2, y2) = coord1, coord2
     return abs(x1 - x2) + abs(y1 - y2)
 
-def bellman_ford(G, start):
-    # Initialize distances from the start to all nodes as infinity, and to start as 0
-    distances = {vertex: float('infinity') for vertex in G.nodes}
-    distances[start] = 0
+def bellman_ford(G, source):
+    # Step 1: Prepare distance and predecessor dictionaries
+    distance = dict.fromkeys(G, float('infinity'))
+    distance[source] = 0
+    pred = {node: None for node in G}
 
-    # Initialize edge usage count
-    initialize_edge_usage(G)
-    
-    # Relax edges iteratively
+    # Step 2: Relax edges repeatedly
     for _ in range(len(G) - 1):
-        # Track if any edge got updated in this iteration
-        updated = False
         for u, v, data in G.edges(data=True):
-            weight = data['length']  # Assuming 'length' is the attribute for distance
-            # Relax the edge
-            if distances[u] + weight < distances[v]:
-                distances[v] = distances[u] + weight
-                G.edges[u, v, 0]['algorithm_uses'] += 1  # Increment the usage for edge
-                updated = True
-        
-        # If no update occured in this iteration, then no further updates will occur
-        if not updated:
-            break
+            if distance[u] + data['length'] < distance[v]:
+                distance[v] = distance[u] + data['length']
+                pred[v] = u
 
-    # Check for negative weight cycles
+    # Step 3: Check for negative weight cycles
     for u, v, data in G.edges(data=True):
-        weight = data['length']
-        if distances[u] + weight < distances[v]:
-            print("Graph contains a negative-weight cycle")
-            return None
+        if distance[u] + data['length'] < distance[v]:
+            raise nx.NetworkXUnbounded("Graph contains a negative weight cycle.")
+    
+    return distance, pred
 
-    return distances
 
 def initialize_edge_usage(G):
-    for u, v, key in G.edges(keys=True):
-        G[u][v][key]['algorithm_uses'] = 0
+    """
+    Initialize or reset 'algorithm_uses' attribute for all edges to 0.
+    """
+    nx.set_edge_attributes(G, 0, 'algorithm_uses')
+
+
 
 
 
 
 def plot_heatmap(G, algorithm_attr):
-    # Use OSMnx to visualize the edge usage
-    edge_colors = ox.plot.get_edge_colors_by_attr(G, algorithm_attr, cmap="hot")
+    # Get attribute values
+    edge_attributes = list(nx.get_edge_attributes(G, algorithm_attr).values())
+    
+    # If attribute values are empty or not set, print a message and return
+    if not edge_attributes:
+        print(f"No data for attribute '{algorithm_attr}' found on edges.")
+        return
+    
+    # Normalize attribute values
+    norm = mcolors.Normalize(vmin=min(edge_attributes), vmax=max(edge_attributes))
+    cmap = plt.get_cmap('hot')
+    
+    # Apply colormap normalization to edge attributes for coloring
+    edge_colors = [cmap(norm(attr_value)) for attr_value in edge_attributes]
+    
+    # Plot graph
     fig, ax = ox.plot_graph(
-        G,
-        node_size=0,
-        edge_color=edge_colors,
-        edge_linewidth=3,
-        bgcolor='k'
+        G, 
+        node_size=0, 
+        edge_color=edge_colors, 
+        edge_linewidth=3, 
+        bgcolor='k',
+        show=False,  # show=False to further customize the plot before showing
     )
+    
+    # Add colorbar based on normalization
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = plt.colorbar(sm, ax=ax, orientation='vertical', fraction=0.02, pad=0.02)
+    cbar.set_label(algorithm_attr)
     plt.show()
+
 
 
 def spfa(G, start):
@@ -395,41 +412,6 @@ def floyd_warshall(G):
 
     return dist, pred
 
-def initialize_edge_usage_heatmap(G, dist):
-    for u, v, data in G.edges(data=True):
-        if dist[u][v] != float('infinity'):
-            if 'algorithm_uses' not in data:
-                data['algorithm_uses'] = 0
-            data['algorithm_uses'] += 1  # Increment the usage for edge
-
-def plot_graph_with_heatmap(G):
-    fig, ax = plt.subplots(figsize=(12, 12))
-    
-    # Normalize edge usage for color mapping
-    max_usage = max([data.get('algorithm_uses', 1) for u, v, data in G.edges(data=True)])
-    edge_colors = [data.get('algorithm_uses', 0) / max_usage if max_usage > 0 else 0 for u, v, data in G.edges(data=True)]
-
-    pos = {node: (data['x'], data['y']) for node, data in G.nodes(data=True)}
-    
-    nx.draw_networkx_edges(
-        G,
-        pos,
-        edge_color=edge_colors,
-        edge_cmap=plt.cm.hot,
-        width=2,
-        ax=ax
-    )
-    sm = plt.cm.ScalarMappable(cmap=plt.cm.hot, norm=plt.Normalize(vmin=-max_usage, vmax=max_usage))
-    sm._A = []
-    
-    cbar = plt.colorbar(sm, ax=ax)
-    cbar.set_label('Edge Usage Intensity')
-
-    plt.title("Edge Usage Heatmap")
-    plt.axis('off')
-    plt.show()
-
-
 def update_edge_usage(G, pred):
     # Reset 'algorithm_uses' to 0 for all edges
     initialize_edge_usage(G)
@@ -460,11 +442,21 @@ def update_edge_usage(G, pred):
                 target = prev
 
 
+def johnsons_algorithm_simplified(G):
+    distances = {}
+    predecessors = {}
 
+    # Run Dijkstra's algorithm for each node
+    for node in G.nodes():
+        dist, pred = nx.single_source_dijkstra(G, source=node, weight='length')
+        distances[node] = dist
+        predecessors[node] = pred
+
+    return distances, predecessors
 
 def main():
     # Specify the path to your local .osm file
-    local_osm_file_path = 'Chodel_map.graphml'
+    local_osm_file_path = 'Wroclaw_map.graphml'
     try:
         G = load_local_map(local_osm_file_path)
     except FileNotFoundError as e:
@@ -473,7 +465,7 @@ def main():
     
     start, end = get_random_nodes(G)
     
-    '''
+    
     dijkstra_path = dijkstra(G, start, end)
     if dijkstra_path:
         travel_time, path_length, default_speed_distance, average_speed = analyze_path(G, dijkstra_path)
@@ -497,7 +489,6 @@ def main():
        
     double_sweep_path = double_sweep(G, start)
     # Inside your main function after the double_sweep call
-    print(double_sweep_path)
     if double_sweep_path:
         travel_time, path_length, default_speed_distance, average_speed = analyze_path(G, double_sweep_path)
         print("Double Sweep Algorithm Results:")
@@ -525,7 +516,7 @@ def main():
     distances = spfa(G, start)
     if distances:
         plot_heatmap(G, 'algorithm_uses')
-   '''
+   
 
 
 
@@ -542,6 +533,20 @@ def main():
         update_edge_usage(G, pred)
         # Plot heatmap
         plot_heatmap(G, 'algorithm_uses')
+
+    
+    # To be placed within the `main` function, replacing the previous heatmap plotting section
+
+    # Initialize 'length' for all edges to zero
+    initialize_edge_usage(G)
+
+    distances, predecessors = johnsons_algorithm_simplified(G)
+
+    if distances and predecessors:
+        update_edge_usage(G, pred)
+        # Plot heatmap
+        plot_heatmap(G, 'algorithm_uses')
+
 
 if __name__ == '__main__':
     main()

@@ -200,10 +200,4 @@ for _ in range(N):
 
 #plot_heatmap("a_star")
 
-
-
-# Load the graph from the file
-
-
-# Now you can use the loaded graph object for further processing
 '''

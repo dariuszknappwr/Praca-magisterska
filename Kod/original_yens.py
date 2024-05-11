@@ -84,11 +84,7 @@ def dijkstra(orig, dest, plot=False):
             if plot:
                 print("Iterations:", step)
                 plot_graph()
-            path = []
-            while node is not None:
-                path.append(node)
-                node = G.nodes[node]["previous"]
-            return path[::-1]
+            return dist[], prev[]
         if G.nodes[node]["visited"]: continue
         G.nodes[node]["visited"] = True
         for edge in G.out_edges(node):
