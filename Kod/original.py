@@ -167,7 +167,7 @@ start = random.choice(list(G.nodes))
 end = random.choice(list(G.nodes))
 
 start_time = time.time()
-dijkstra(start, end, plot=False)
+dijkstra(start, end, plot=True)
 print("Dijkstra time:", time.time() - start_time)
 
 start_time = time.time()
@@ -175,7 +175,7 @@ reconstruct_path(start, end, plot=True)
 print("reconstruct time:", time.time() - start_time)
 
 start_time = time.time()
-a_star(start, end, plot=False)
+a_star(start, end, plot=True)
 print("a star time:", time.time() - start_time)
 
 start_time = time.time()

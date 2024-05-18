@@ -12,11 +12,11 @@ client = MongoClient('mongodb://localhost:27017/')
 db = client['PracaMagisterska']
 
 ########## Test 1 ##########
-collection = db['Test1_2']
+collection = db['Test2']
 
 results = list(collection.find())
 
-algorithms = ['Dijkstra\'s Algorithm', 'A* Algorithm Euclidean', 'A* Algorithm Manhattan', 'A* Algorithm Chebyshev', 'A* Algorithm Haversine']
+algorithms = ['Dijkstra\'s Algorithm', 'Dijkstra\'s Max Speed Algorithm', 'A* Algorithm Euclidean', 'A* Algorithm Euclidean New', 'A* Algorithm Manhattan', 'A* Algorithm Chebyshev', 'A* Algorithm Haversine']
 statistics_names = ["Time", "Travel Time", "Path Length", "Default Speed Distance", "Average Speed"]
 
 # Initialize a nested dictionary to store the times for each algorithm and each statistic
