@@ -4,7 +4,7 @@ import heapq
 import time
 
 start_time = time.time()
-G = ox.load_graphml("Lubelskie_map.graphml")
+G = ox.load_graphml("Nowy_York_map.graphml")
 #G = ox.graph_from_place("Poland", network_type="drive")
 print("Load time:", time.time() - start_time)
 for edge in G.edges:
@@ -13,10 +13,10 @@ for edge in G.edges:
     if "maxspeed" in G.edges[edge]:
         maxspeed = G.edges[edge]["maxspeed"]
         if type(maxspeed) == list:
-            speeds = [ int(speed) for speed in maxspeed ]
+            speeds = [ int(speed.replace("mph", "")) for speed in maxspeed ]
             maxspeed = min(speeds)
         elif type(maxspeed) == str:
-            maxspeed = int(maxspeed)
+            maxspeed = int(maxspeed.replace("mph", ""))
     G.edges[edge]["maxspeed"] = maxspeed
     # Adding the "weight" attribute (time = distance / speed)
     G.edges[edge]["weight"] = G.edges[edge]["length"] / maxspeed
@@ -167,7 +167,7 @@ start = random.choice(list(G.nodes))
 end = random.choice(list(G.nodes))
 
 start_time = time.time()
-dijkstra(start, end, plot=True)
+dijkstra(start, end, plot=False)
 print("Dijkstra time:", time.time() - start_time)
 
 start_time = time.time()
@@ -175,8 +175,8 @@ reconstruct_path(start, end, plot=True)
 print("reconstruct time:", time.time() - start_time)
 
 start_time = time.time()
-a_star(start, end, plot=True)
-print("Dijkstra time:", time.time() - start_time)
+a_star(start, end, plot=False)
+print("a star time:", time.time() - start_time)
 
 start_time = time.time()
 reconstruct_path(start, end, plot=True)

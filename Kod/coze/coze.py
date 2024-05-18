@@ -59,75 +59,49 @@ def get_edge_speed(G, u, v, key=0):
         speed = default_speed
 
     return speed
-'''
-def dijkstra(G, start, end):
-    shortest_distances = {vertex: float('infinity') for vertex in G.nodes()}
-    shortest_distances[start] = 0
-    previous_vertices = {vertex: None for vertex in G.nodes()}
-    unvisited = set(G.nodes())
 
-    while unvisited:
-        current = min(unvisited, key=lambda vertex: shortest_distances[vertex])
-        unvisited.remove(current)
-
-        if current == end or shortest_distances[current] == float('infinity'):
+def dijkstra(G, orig, dest, plot=False):
+    for node in G.nodes:
+        G.nodes[node]["visited"] = False
+        G.nodes[node]["distance"] = float("inf")
+        G.nodes[node]["previous"] = None
+        G.nodes[node]["size"] = 0
+    #for edge in G.edges:
+        #style_unvisited_edge(G, edge)
+    G.nodes[orig]["distance"] = 0
+    G.nodes[orig]["size"] = 50
+    G.nodes[dest]["size"] = 50
+    pq = [(0, orig)]
+    step = 0
+    while pq:
+        _, node = heapq.heappop(pq)
+        if node == dest:
+            #if plot:
+                #print("Iteraciones:", step)
+                #plot_graph()
             break
+        if G.nodes[node]["visited"]: continue
+        G.nodes[node]["visited"] = True
+        for edge in G.out_edges(node):
+            #style_visited_edge(G, (edge[0], edge[1], 0))
+            neighbor = edge[1]
+            weight = get_edge_speed(G, edge[0], edge[1], 0)
+            if G.nodes[neighbor]["distance"] > G.nodes[node]["distance"] + weight:
+                G.nodes[neighbor]["distance"] = G.nodes[node]["distance"] + weight
+                G.nodes[neighbor]["previous"] = node
+                heapq.heappush(pq, (G.nodes[neighbor]["distance"], neighbor))
+                #for edge2 in G.out_edges(neighbor):
+                    #style_active_edge(G, (edge2[0], edge2[1], 0))
+        step += 1
 
-        for neighbor in G.neighbors(current):
-            for key, edge_data in G[current][neighbor].items():
-                edge_length = edge_data.get('length', 0)
-                edge_speed = get_edge_speed(G, current, neighbor, key)
-                travel_time = edge_length / (edge_speed / 3.6)  # Convert speed to m/s
-                
-                if shortest_distances[current] + travel_time < shortest_distances[neighbor]:
-                    shortest_distances[neighbor] = shortest_distances[current] + travel_time
-                    previous_vertices[neighbor] = current
-
-    # Reconstruct the shortest path
-    path = []
-    current_node = end
+    # Path construction from end to start
+    path = deque()
+    current_node = dest
     while current_node is not None:
-        path.insert(0, current_node)
-        current_node = previous_vertices[current_node]
-
-    return path
-'''
-
-def dijkstra(G, start, end):
-    shortest_distances = {vertex: float('infinity') for vertex in G.nodes()}
-    shortest_distances[start] = 0
-    previous_vertices = {vertex: None for vertex in G.nodes()}
-    priority_queue = [(0, start)]
-
-    while priority_queue:
-        current_distance, current = heapq.heappop(priority_queue)
-
-        if current == end:
-            break
-        
-        if current_distance > shortest_distances[current]:
-            continue
-
-        for neighbor in G.neighbors(current):
-            edge_data = G.get_edge_data(current, neighbor, 0)
-            edge_length = edge_data.get('length', 0)
-            edge_speed = get_edge_speed(G, current, neighbor, 0)
-            travel_time = edge_length / (edge_speed / 3.6)  # Convert speed to m/s
-
-            if shortest_distances[current] + travel_time < shortest_distances[neighbor]:
-                shortest_distances[neighbor] = shortest_distances[current] + travel_time
-                previous_vertices[neighbor] = current
-                heapq.heappush(priority_queue, (shortest_distances[neighbor], neighbor))
-
-    # Reconstruct the shortest path
-    path = []
-    current_node = end
-    while current_node is not None:
-        path.insert(0, current_node)
-        current_node = previous_vertices[current_node]
-
-    return path
-
+        path.appendleft(current_node)
+        current_node = G.nodes[current_node]["previous"]
+    return list(path)
+    
 
 def yen_ksp(G, source, target, K=1):
     A = [nx.shortest_path(G, source, target, weight='length')]
@@ -278,9 +252,15 @@ def a_star_algorithm(G, start, end, heuristic):
     end_coord = (G.nodes[end]['y'], G.nodes[end]['x'])
     # Set of visited nodes to avoid revisiting them
     visited = set()
+    
+    # Variable to keep track of the number of iterations
+    iteration_count = 0
 
     while queue:
         _, current_node, current_actual_cost = heapq.heappop(queue)
+        
+        # Increase the iteration count
+        iteration_count += 1
 
         # If the current node is the destination, we can break the loop early
         if current_node == end:
@@ -319,9 +299,100 @@ def a_star_algorithm(G, start, end, heuristic):
         path.appendleft(end)
         end = previous_nodes[end]
 
+    #print("Number of iterations A*:", iteration_count)
+
     return list(path)
 
+def plot_graph(G):
+    ox.plot_graph(
+        G,
+        node_size =  [ G.nodes[node]["size"] for node in G.nodes ],
+        edge_color = [ G.edges[edge]["color"] for edge in G.edges ],
+        edge_alpha = [ G.edges[edge]["alpha"] for edge in G.edges ],
+        edge_linewidth = [ G.edges[edge]["linewidth"] for edge in G.edges ],
+        node_color = "white",
+        bgcolor = "#18080e"
+    )
 
+def a_star(G, orig, dest, heuristic, plot=False):
+    for node in G.nodes:
+        G.nodes[node]["previous"] = None
+        G.nodes[node]["size"] = 0
+        G.nodes[node]["g_score"] = float("inf")
+        G.nodes[node]["f_score"] = float("inf")
+    for edge in G.edges:
+        G = style_unvisited_edge(G, edge)
+    G.nodes[orig]["size"] = 50
+    G.nodes[dest]["size"] = 50
+    G.nodes[orig]["g_score"] = 0
+    G.nodes[orig]["f_score"] = heuristic(G, orig, dest)
+    pq = [(G.nodes[orig]["f_score"], orig)]
+    step = 0
+    while pq:
+        _, node = heapq.heappop(pq)
+        if node == dest:
+            #if plot:
+            #    print("Iteraciones:", step)
+            #    plot_graph(G)
+            break
+        for edge in G.out_edges(node):
+            #G = style_visited_edge(G, (edge[0], edge[1], 0))
+            neighbor = edge[1]
+            tentative_g_score = G.nodes[node]["g_score"] + heuristic(G, node, neighbor)
+            if tentative_g_score < G.nodes[neighbor]["g_score"]:
+                G.nodes[neighbor]["previous"] = node
+                G.nodes[neighbor]["g_score"] = tentative_g_score
+                G.nodes[neighbor]["f_score"] = tentative_g_score + heuristic(G, neighbor, dest)
+                heapq.heappush(pq, (G.nodes[neighbor]["f_score"], neighbor))
+                #for edge2 in G.out_edges(neighbor):
+                    #G = style_active_edge(G, (edge2[0], edge2[1], 0))
+        step += 1
+
+        # Path construction from end to start
+    path = deque()
+    current_node = dest
+    while current_node is not None:
+        path.appendleft(current_node)
+        current_node = G.nodes[current_node]["previous"]
+    return list(path)
+
+    #print("Number of iterations A*:", iteration_count)
+
+    return list(path)
+
+def style_unvisited_edge(G, edge):        
+    G.edges[edge]["color"] = "blue"
+    G.edges[edge]["alpha"] = 0.2
+    G.edges[edge]["linewidth"] = 0.5
+    return G
+
+def style_visited_edge(G, edge):
+    G.edges[edge]["color"] = "blue"
+    G.edges[edge]["alpha"] = 1
+    G.edges[edge]["linewidth"] = 1
+    return G
+
+def style_active_edge(G, edge):
+    G.edges[edge]["color"] = 'blue'
+    G.edges[edge]["alpha"] = 1
+    G.edges[edge]["linewidth"] = 1
+    return G
+
+def style_path_edge(G, edge):
+    G.edges[edge]["color"] = "white"
+    G.edges[edge]["alpha"] = 1
+    G.edges[edge]["linewidth"] = 1
+    return G
+
+#def manhattan_heuristic(G, node1, node2):
+#    x1, y1 = G.nodes[node1]["x"], G.nodes[node1]["y"]
+#    x2, y2 = G.nodes[node2]["x"], G.nodes[node2]["y"]
+#    return abs(x1 - x2) + abs(y1 - y2)
+
+#def euclidean_heuristic(G, node1, node2):
+#    x1, y1 = G.nodes[node1]["x"], G.nodes[node1]["y"]
+#    x2, y2 = G.nodes[node2]["x"], G.nodes[node2]["y"]
+#    return ((x2 - x1)**2 + (y2 - y1)**2)**0.5
 
 def euclidean_heuristic(coord1, coord2):
     (x1, y1), (x2, y2) = coord1, coord2
@@ -351,6 +422,23 @@ def haversine(coord1, coord2):
     c = 2 * math.asin(math.sqrt(a))
     r = 6371  # Radius of Earth in kilometers
     return c * r
+
+def landmark_heuristic(node, end, landmark_distances):
+    """
+    Calculate heuristic based on landmark precomputed distances.
+    For simplification, we use one landmark and the triangle inequality here.
+    """
+    landmark = 'some_landmark_id'  # Suppose we use a specific landmark
+    # Ensuring admissibility by taking the max of two possible triangle inequality applications
+    heuristic_estimate = max(
+        landmark_distances[landmark][end] - landmark_distances[landmark][node],
+        landmark_distances[landmark][node] - landmark_distances[landmark][end]
+    )
+    return max(0, heuristic_estimate)  # Ensure we don't return negative values
+
+# Within the A* function, call the heuristic like so:
+#estimated_cost_to_end = landmark_heuristic(current_node, end_node, landmark_distances)
+
 
 def bellman_ford(G, source):
     # Step 1: Prepare distance and predecessor dictionaries
@@ -561,6 +649,7 @@ def main():
         a_star_path_euclidean = a_star_algorithm(G, start_node, end_node, euclidean_heuristic)
         end_time = time.time()
         a_star_time_euclidean = end_time - start_time
+        #plt.show()
 
         start_time = time.time()
         a_star_path_manhattan = a_star_algorithm(G, start_node, end_node, manhattan_heuristic)
