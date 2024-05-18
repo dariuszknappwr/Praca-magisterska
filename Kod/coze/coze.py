@@ -19,8 +19,7 @@ from pymongo import MongoClient
 def calculate_time(distance, max_speed):
     speed_m_per_s = max_speed / 3.6
     time = distance / speed_m_per_s
-    time_hours = time / 3600
-    return time_hours
+    return time
 
 def download_map(city, osm_file_path):
     G = ox.graph_from_place(city, network_type='drive')
@@ -60,7 +59,7 @@ def get_edge_speed(G, u, v, key=0):
         speed = default_speed
 
     return speed
-
+'''
 def dijkstra(G, start, end):
     shortest_distances = {vertex: float('infinity') for vertex in G.nodes()}
     shortest_distances[start] = 0
@@ -92,6 +91,43 @@ def dijkstra(G, start, end):
         current_node = previous_vertices[current_node]
 
     return path
+'''
+
+def dijkstra(G, start, end):
+    shortest_distances = {vertex: float('infinity') for vertex in G.nodes()}
+    shortest_distances[start] = 0
+    previous_vertices = {vertex: None for vertex in G.nodes()}
+    priority_queue = [(0, start)]
+
+    while priority_queue:
+        current_distance, current = heapq.heappop(priority_queue)
+
+        if current == end:
+            break
+        
+        if current_distance > shortest_distances[current]:
+            continue
+
+        for neighbor in G.neighbors(current):
+            edge_data = G.get_edge_data(current, neighbor, 0)
+            edge_length = edge_data.get('length', 0)
+            edge_speed = get_edge_speed(G, current, neighbor, 0)
+            travel_time = edge_length / (edge_speed / 3.6)  # Convert speed to m/s
+
+            if shortest_distances[current] + travel_time < shortest_distances[neighbor]:
+                shortest_distances[neighbor] = shortest_distances[current] + travel_time
+                previous_vertices[neighbor] = current
+                heapq.heappush(priority_queue, (shortest_distances[neighbor], neighbor))
+
+    # Reconstruct the shortest path
+    path = []
+    current_node = end
+    while current_node is not None:
+        path.insert(0, current_node)
+        current_node = previous_vertices[current_node]
+
+    return path
+
 
 def yen_ksp(G, source, target, K=1):
     A = [nx.shortest_path(G, source, target, weight='length')]
@@ -227,6 +263,81 @@ def double_sweep(G, start=None):
 
     return path
 
+
+
+def a_star_algorithm(G, start, end, heuristic):
+    # Priority queue, containing pairs of (estimated_total_cost, current_node, current_actual_cost)
+    queue = [(0, start, 0)]
+    # Distances and previous_nodes contain actual costs and paths discovered so far
+    distances = {node: float('infinity') for node in G.nodes}
+    previous_nodes = {node: None for node in G.nodes}
+    distances[start] = 0
+    
+    # Coordinates for the start and end are constants, so calculate outside the while loop
+    start_coord = (G.nodes[start]['y'], G.nodes[start]['x'])
+    end_coord = (G.nodes[end]['y'], G.nodes[end]['x'])
+    # Set of visited nodes to avoid revisiting them
+    visited = set()
+
+    while queue:
+        _, current_node, current_actual_cost = heapq.heappop(queue)
+
+        # If the current node is the destination, we can break the loop early
+        if current_node == end:
+            break
+
+        # If we have already visited this node, skip processing
+        if current_node in visited:
+            continue
+
+        # Mark the current node as visited
+        visited.add(current_node)
+
+        # Explore neighbors
+        for neighbor in G.adj[current_node]:
+            edge_data = G.edges[current_node, neighbor, 0]
+            edge_length = edge_data.get('length', 0)
+            edge_speed = get_edge_speed(G, current_node, neighbor, 0)
+            
+            # Calculate the actual cost to reach the neighbor
+            neighbor_actual_cost = current_actual_cost + (edge_length / (edge_speed / 3.6))
+            neighbor_coord = (G.nodes[neighbor]['y'], G.nodes[neighbor]['x'])
+
+            # If this path to the neighbor is better, consider updating the route
+            if neighbor_actual_cost < distances[neighbor]:
+                distances[neighbor] = neighbor_actual_cost
+                previous_nodes[neighbor] = current_node
+                
+                # Calculate the estimated cost to the end and push to the queue
+                estimated_cost_to_end = heuristic(neighbor_coord, end_coord) 
+                estimated_total_cost = neighbor_actual_cost + estimated_cost_to_end
+                heapq.heappush(queue, (estimated_total_cost, neighbor, neighbor_actual_cost))
+
+    # Path construction from end to start
+    path = deque()
+    while end is not None:
+        path.appendleft(end)
+        end = previous_nodes[end]
+
+    return list(path)
+
+
+
+def euclidean_heuristic(coord1, coord2):
+    (x1, y1), (x2, y2) = coord1, coord2
+    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+#def euclidean_heuristic(coord1, coord2):
+#    return ((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2) ** 0.5
+
+
+def manhattan_heuristic(coord1, coord2):
+    (x1, y1), (x2, y2) = coord1, coord2
+    return abs(x1 - x2) + abs(y1 - y2)
+
+def chebyshev_heuristic(coord1, coord2):
+    (x1, y1), (x2, y2) = coord1, coord2
+    return max(abs(x1 - x2), abs(y1 - y2))
+
 def haversine(coord1, coord2):
     # Converts latitude and longitude to
     # spherical coordinates in radians.
@@ -240,63 +351,6 @@ def haversine(coord1, coord2):
     c = 2 * math.asin(math.sqrt(a))
     r = 6371  # Radius of Earth in kilometers
     return c * r
-
-
-def a_star_algorithm(G, start, end, heuristic):
-    # Initialize data structures
-    queue = [(0, start)]  # Priority queue
-    distances = {node: float('infinity') for node in G.nodes}  # Shortest distance from start to node
-    previous_nodes = {node: None for node in G.nodes}  # Previous node in optimal path
-    distances[start] = 0  # Distance from start to start is zero
-
-    start_coord = (G.nodes[start]['y'], G.nodes[start]['x'])  # Start coordinates
-    end_coord = (G.nodes[end]['y'], G.nodes[end]['x'])  # End coordinates
-    costs = {start: heuristic(start_coord, end_coord)}  # Cost estimate for shortest path
-
-    while queue:
-        _, current_node = heapq.heappop(queue)
-        if current_node == end:
-            break
-
-        current_coord = (G.nodes[current_node]['y'], G.nodes[current_node]['x'])
-        for neighbor in G.adj[current_node]:
-            edge_data = G.edges[current_node, neighbor, 0]
-            edge_speed = get_edge_speed(G, current_node, neighbor, 0)
-            edge_length = edge_data.get('length', 0)
-            neighbor_coord = (G.nodes[neighbor]['y'], G.nodes[neighbor]['x'])
-            candidate_distance = distances[current_node] + edge_length / (edge_speed / 3.6)  # Actual cost to neighbor
-            estimated_heuristic = heuristic(neighbor_coord, end_coord)  # Heuristic cost from neighbor to end
-
-            # Update cost if it's lower than previously found
-            if candidate_distance + estimated_heuristic < costs.get(neighbor, float('infinity')):
-                distances[neighbor] = candidate_distance
-                costs[neighbor] = candidate_distance + estimated_heuristic
-                heapq.heappush(queue, (costs[neighbor], neighbor))
-                previous_nodes[neighbor] = current_node
-
-    # Path reconstruction
-    if previous_nodes[end] is None:
-        return []  # No path found
-
-    path = [end]
-    while previous_nodes[path[-1]] is not None:
-        path.append(previous_nodes[path[-1]])
-    path.reverse()
-    
-    return path
-
-
-def euclidean_heuristic(coord1, coord2):
-    (x1, y1), (x2, y2) = coord1, coord2
-    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-
-def manhattan_heuristic(coord1, coord2):
-    (x1, y1), (x2, y2) = coord1, coord2
-    return abs(x1 - x2) + abs(y1 - y2)
-
-def chebyshev_heuristic(coord1, coord2):
-    (x1, y1), (x2, y2) = coord1, coord2
-    return max(abs(x1 - x2), abs(y1 - y2))
 
 def bellman_ford(G, source):
     # Step 1: Prepare distance and predecessor dictionaries
@@ -461,6 +515,11 @@ def johnsons_algorithm_simplified(G):
 
     return distances, predecessors
 
+def dist(a, b):
+     (x1, y1) = a
+     (x2, y2) = b
+     return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+
 def main():
     # Specify the path to your local .osm file
     local_osm_file_path = 'Nowy_York_map.graphml'
@@ -478,9 +537,11 @@ def main():
     # Connect to your database
     db = client['PracaMagisterska']
 
-########## Test 1 ##########
-    collection = db['Test1']
-    '''
+################ Test 2 ################
+    collection = db['Test2']
+
+    print(ox.basic_stats(G))
+    
     start_nodes = []
     end_nodes = []
     with open('start_end_nodes_test1.txt', 'r') as file:
@@ -491,107 +552,219 @@ def main():
             end_nodes.append(int(end.strip()))
 
     for i in range(len(start_nodes)):
-    '''
-   # start_node = start_nodes[i]
-    #end_node = end_nodes[i]
-    start_node, end_node = get_random_nodes(G)
-    # Perform the algorithm calculations using the start and end nodes
-    start_time = time.time()
-    a_star_path_euclidean = a_star_algorithm(G, start_node, end_node, euclidean_heuristic)
-    end_time = time.time()
-    a_star_time_euclidean = end_time - start_time
+        
+        start_node = start_nodes[i]
+        end_node = end_nodes[i]
+        #start_node, end_node = get_random_nodes(G)
+        # Perform the algorithm calculations using the start and end nodes
+        start_time = time.time()
+        a_star_path_euclidean = a_star_algorithm(G, start_node, end_node, euclidean_heuristic)
+        end_time = time.time()
+        a_star_time_euclidean = end_time - start_time
 
-    start_time = time.time()
-    a_star_path_manhattan = a_star_algorithm(G, start_node, end_node, manhattan_heuristic)
-    end_time = time.time()
-    a_star_time_manhattan = end_time - start_time
+        start_time = time.time()
+        a_star_path_manhattan = a_star_algorithm(G, start_node, end_node, manhattan_heuristic)
+        end_time = time.time()
+        a_star_time_manhattan = end_time - start_time
 
-    start_time = time.time()
-    a_star_path_chebyshev = a_star_algorithm(G, start_node, end_node, chebyshev_heuristic)
-    end_time = time.time()
-    a_star_time_chebyshev = end_time - start_time
+        start_time = time.time()
+        a_star_path_chebyshev = a_star_algorithm(G, start_node, end_node, chebyshev_heuristic)
+        end_time = time.time()
+        a_star_time_chebyshev = end_time - start_time
 
-    start_time = time.time()
-    a_star_path_haversine = a_star_algorithm(G, start_node, end_node, haversine)
-    end_time = time.time()
-    a_star_time_haversine = end_time - start_time
+        start_time = time.time()
+        a_star_path_haversine = a_star_algorithm(G, start_node, end_node, haversine)
+        end_time = time.time()
+        a_star_time_haversine = end_time - start_time
 
-    start_time = time.time()
-    dijkstra_path = dijkstra(G, start_node, end_node)
-    end_time = time.time()
-    dijkstra_time = end_time - start_time
+        start_time = time.time()
+        dijkstra_path = dijkstra(G, start_node, end_node)
+        end_time = time.time()
+        dijkstra_time = end_time - start_time
 
-    # Calculate and store the results
-    result = {
-        "Number of nodes": G.number_of_nodes(),
-        "Number of edges": G.number_of_edges(),
-        "A* Algorithm Time Euclidean": a_star_time_euclidean,
-        "A* Algorithm Time Manhattan": a_star_time_manhattan,
-        "A* Algorithm Time Chebyshev": a_star_time_chebyshev,
-        "A* Algorithm Time Haversine": a_star_time_haversine,
-        "Dijkstra's Algorithm Time": dijkstra_time,
-    }
+        # Calculate and store the results
+        result = {
+            "A* Algorithm Euclidean Time": a_star_time_euclidean,
+            "A* Algorithm Manhattan Time": a_star_time_manhattan,
+            "A* Algorithm Chebyshev Time": a_star_time_chebyshev,
+            "A* Algorithm Haversine Time": a_star_time_haversine,
+            "Dijkstra's Algorithm Time": dijkstra_time,
+        }
 
-    if dijkstra_path:
-        travel_time, path_length, default_speed_distance, average_speed = analyze_path(G, dijkstra_path)
-        result.update({
-            "Dijkstra's Algorithm Path": dijkstra_path,
-            "Dijkstra's Algorithm Travel Time": travel_time,
-            "Dijkstra's Algorithm Path Length": path_length,
-            "Dijkstra's Algorithm Default Speed Distance": default_speed_distance,
-            "Dijkstra's Algorithm Average Speed": average_speed,
-        })
+        if dijkstra_path:
+            travel_time, path_length, default_speed_distance, average_speed = analyze_path(G, dijkstra_path)
+            result.update({
+                "Dijkstra's Algorithm Path": dijkstra_path,
+                "Dijkstra's Algorithm Travel Time": travel_time,
+                "Dijkstra's Algorithm Path Length": path_length,
+                "Dijkstra's Algorithm Default Speed Distance": default_speed_distance,
+                "Dijkstra's Algorithm Average Speed": average_speed,
+            })
 
-    if a_star_path_euclidean:
-        travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_euclidean)
-        result.update({
-            "A* Algorithm Euclidean Path": a_star_path_euclidean,
-            "A* Algorithm Euclidean Travel Time": travel_time,
-            "A* Algorithm Euclidean Path Length": a_star_path_length,
-            "A* Algorithm Euclidean Default Speed Distance": a_star_default_speed_distance,
-            "A* Algorithm Euclidean Average Speed": a_star_average_speed,
-        })
+        if a_star_path_euclidean:
+            travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_euclidean)
+            result.update({
+                "A* Algorithm Euclidean Path": a_star_path_euclidean,
+                "A* Algorithm Euclidean Travel Time": travel_time,
+                "A* Algorithm Euclidean Path Length": a_star_path_length,
+                "A* Algorithm Euclidean Default Speed Distance": a_star_default_speed_distance,
+                "A* Algorithm Euclidean Average Speed": a_star_average_speed,
+            })
 
 
-    if a_star_path_manhattan:
-        travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_manhattan)
-        result.update({
-            "A* Algorithm Manhattan Path": a_star_path_manhattan,
-            "A* Algorithm Manhattan Travel Time": travel_time,
-            "A* Algorithm Manhattan Path Length": a_star_path_length,
-            "A* Algorithm Manhattan Default Speed Distance": a_star_default_speed_distance,
-            "A* Algorithm Manhattan Average Speed": a_star_average_speed,
-        })
+        if a_star_path_manhattan:
+            travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_manhattan)
+            result.update({
+                "A* Algorithm Manhattan Path": a_star_path_manhattan,
+                "A* Algorithm Manhattan Travel Time": travel_time,
+                "A* Algorithm Manhattan Path Length": a_star_path_length,
+                "A* Algorithm Manhattan Default Speed Distance": a_star_default_speed_distance,
+                "A* Algorithm Manhattan Average Speed": a_star_average_speed,
+            })
 
-    if a_star_path_chebyshev:
-        travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_chebyshev)
-        result.update({
-            "A* Algorithm Chebyshev Path": a_star_path_chebyshev,
-            "A* Algorithm Chebyshev Travel Time": travel_time,
-            "A* Algorithm Chebyshev Path Length": a_star_path_length,
-            "A* Algorithm Chebyshev Default Speed Distance": a_star_default_speed_distance,
-            "A* Algorithm Chebyshev Average Speed": a_star_average_speed,
-        })
+        if a_star_path_chebyshev:
+            travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_chebyshev)
+            result.update({
+                "A* Algorithm Chebyshev Path": a_star_path_chebyshev,
+                "A* Algorithm Chebyshev Travel Time": travel_time,
+                "A* Algorithm Chebyshev Path Length": a_star_path_length,
+                "A* Algorithm Chebyshev Default Speed Distance": a_star_default_speed_distance,
+                "A* Algorithm Chebyshev Average Speed": a_star_average_speed,
+            })
 
-    if a_star_path_haversine:
-        travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_haversine)
-        result.update({
-            "A* Algorithm Haversine Path": a_star_path_haversine,
-            "A* Algorithm Haversine Travel Time": travel_time,
-            "A* Algorithm Haversine Path Length": a_star_path_length,
-            "A* Algorithm Haversine Default Speed Distance": a_star_default_speed_distance,
-            "A* Algorithm v Average Speed": a_star_average_speed,
-        })
+        if a_star_path_haversine:
+            travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_haversine)
+            result.update({
+                "A* Algorithm Haversine Path": a_star_path_haversine,
+                "A* Algorithm Haversine Travel Time": travel_time,
+                "A* Algorithm Haversine Path Length": a_star_path_length,
+                "A* Algorithm Haversine Default Speed Distance": a_star_default_speed_distance,
+                "A* Algorithm Haversine Average Speed": a_star_average_speed,
+            })
 
-    # Insert the result into the collection
-    collection.insert_one(result)
+        # Insert the result into the collection
+        collection.insert_one(result)
 
 #load data from mongo and calculate statistics
 
 
-################ Test 2 ################
+########## Test 1 ##########
+'''
+    collection = db['Test1_2']
+    
+    start_nodes = []
+    end_nodes = []
+    with open('start_end_nodes_test1.txt', 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            start, end = line.strip().split(',')
+            start_nodes.append(int(start.strip()))
+            end_nodes.append(int(end.strip()))
 
-    '''
+    for i in range(len(start_nodes)):
+        
+        start_node = start_nodes[i]
+        end_node = end_nodes[i]
+        #start_node, end_node = get_random_nodes(G)
+        # Perform the algorithm calculations using the start and end nodes
+        start_time = time.time()
+        a_star_path_euclidean = a_star_algorithm(G, start_node, end_node, euclidean_heuristic)
+        end_time = time.time()
+        a_star_time_euclidean = end_time - start_time
+
+        start_time = time.time()
+        a_star_path_manhattan = a_star_algorithm(G, start_node, end_node, manhattan_heuristic)
+        end_time = time.time()
+        a_star_time_manhattan = end_time - start_time
+
+        start_time = time.time()
+        a_star_path_chebyshev = a_star_algorithm(G, start_node, end_node, chebyshev_heuristic)
+        end_time = time.time()
+        a_star_time_chebyshev = end_time - start_time
+
+        start_time = time.time()
+        a_star_path_haversine = a_star_algorithm(G, start_node, end_node, haversine)
+        end_time = time.time()
+        a_star_time_haversine = end_time - start_time
+
+        start_time = time.time()
+        dijkstra_path = dijkstra(G, start_node, end_node)
+        end_time = time.time()
+        dijkstra_time = end_time - start_time
+
+        # Calculate and store the results
+        result = {
+            "Number of nodes": G.number_of_nodes(),
+            "Number of edges": G.number_of_edges(),
+            "A* Algorithm Euclidean Time": a_star_time_euclidean,
+            "A* Algorithm Manhattan Time": a_star_time_manhattan,
+            "A* Algorithm Chebyshev Time": a_star_time_chebyshev,
+            "A* Algorithm Haversine Time": a_star_time_haversine,
+            "Dijkstra's Algorithm Time": dijkstra_time,
+        }
+
+        if dijkstra_path:
+            travel_time, path_length, default_speed_distance, average_speed = analyze_path(G, dijkstra_path)
+            result.update({
+                "Dijkstra's Algorithm Path": dijkstra_path,
+                "Dijkstra's Algorithm Travel Time": travel_time,
+                "Dijkstra's Algorithm Path Length": path_length,
+                "Dijkstra's Algorithm Default Speed Distance": default_speed_distance,
+                "Dijkstra's Algorithm Average Speed": average_speed,
+            })
+
+        if a_star_path_euclidean:
+            travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_euclidean)
+            result.update({
+                "A* Algorithm Euclidean Path": a_star_path_euclidean,
+                "A* Algorithm Euclidean Travel Time": travel_time,
+                "A* Algorithm Euclidean Path Length": a_star_path_length,
+                "A* Algorithm Euclidean Default Speed Distance": a_star_default_speed_distance,
+                "A* Algorithm Euclidean Average Speed": a_star_average_speed,
+            })
+
+
+        if a_star_path_manhattan:
+            travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_manhattan)
+            result.update({
+                "A* Algorithm Manhattan Path": a_star_path_manhattan,
+                "A* Algorithm Manhattan Travel Time": travel_time,
+                "A* Algorithm Manhattan Path Length": a_star_path_length,
+                "A* Algorithm Manhattan Default Speed Distance": a_star_default_speed_distance,
+                "A* Algorithm Manhattan Average Speed": a_star_average_speed,
+            })
+
+        if a_star_path_chebyshev:
+            travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_chebyshev)
+            result.update({
+                "A* Algorithm Chebyshev Path": a_star_path_chebyshev,
+                "A* Algorithm Chebyshev Travel Time": travel_time,
+                "A* Algorithm Chebyshev Path Length": a_star_path_length,
+                "A* Algorithm Chebyshev Default Speed Distance": a_star_default_speed_distance,
+                "A* Algorithm Chebyshev Average Speed": a_star_average_speed,
+            })
+
+        if a_star_path_haversine:
+            travel_time, a_star_path_length, a_star_default_speed_distance, a_star_average_speed = analyze_path(G, a_star_path_haversine)
+            result.update({
+                "A* Algorithm Haversine Path": a_star_path_haversine,
+                "A* Algorithm Haversine Travel Time": travel_time,
+                "A* Algorithm Haversine Path Length": a_star_path_length,
+                "A* Algorithm Haversine Default Speed Distance": a_star_default_speed_distance,
+                "A* Algorithm Haversine Average Speed": a_star_average_speed,
+            })
+
+        # Insert the result into the collection
+        collection.insert_one(result)
+
+#load data from mongo and calculate statistics
+
+'''
+
+
+############################
+
+'''
     # Using Yen's KSP Algorithm
     ksp_paths = yen_ksp(G, start, end, K=2)
     for i, path in enumerate(ksp_paths, start=1):
