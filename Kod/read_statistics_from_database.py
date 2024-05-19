@@ -16,8 +16,8 @@ collection = db['Test2']
 
 results = list(collection.find())
 
-algorithms = ['Dijkstra\'s Algorithm', 'Dijkstra\'s Max Speed Algorithm', 'A* Algorithm Euclidean', 'A* Algorithm Euclidean New', 'A* Algorithm Manhattan', 'A* Algorithm Chebyshev', 'A* Algorithm Haversine']
-statistics_names = ["Time", "Travel Time", "Path Length", "Default Speed Distance", "Average Speed"]
+algorithms = ['Dijkstra\'s Algorithm', 'Dijkstra\'s Max Speed Algorithm', 'A* Algorithm Euclidean', 'A* Algorithm Max Speed Euclidean', 'A* Algorithm Manhattan', 'A* Algorithm Max Speed Manhattan', 'A* Algorithm Chebyshev', 'A* Algorithm Max Speed Chebyshev', 'A* Algorithm Haversine', 'A* Algorithm Max Speed Haversine']
+statistics_names = ["Time", "Iterations", "Travel Time", "Path Length", "Default Speed Distance", "Average Speed"]
 
 # Initialize a nested dictionary to store the times for each algorithm and each statistic
 times = {algorithm: {stat: [] for stat in statistics_names} for algorithm in algorithms}

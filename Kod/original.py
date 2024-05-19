@@ -165,6 +165,7 @@ print(f"Number of vertices: {len(G.nodes)}")
 
 start = random.choice(list(G.nodes))
 end = random.choice(list(G.nodes))
+print(start)
 
 start_time = time.time()
 dijkstra(start, end, plot=True)
