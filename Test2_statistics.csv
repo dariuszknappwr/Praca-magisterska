@@ -1,0 +1,36 @@
+Dijkstra's,Time,0.48,0.47,0.26,0.07
+Dijkstra's,Iterations,27541.57,26515.5,16870.78,284623219.86
+Dijkstra's,Travel Time,2147.08,2136.12,1261.31,1590891.0
+Dijkstra's,Path Length,21747.15,20668.9,13106.64,171784068.77
+Dijkstra's,Default Speed Distance,10823.06,10428.24,6648.64,44204348.51
+Dijkstra's,Average Speed,36.0,36.16,3.76,14.11
+Dijkstra's Max Speed,Time,0.58,0.6,0.32,0.1
+Dijkstra's Max Speed,Iterations,27461.83,26912.5,16960.27,287650842.55
+Dijkstra's Max Speed,Travel Time,1624.94,1552.68,834.84,696957.58
+Dijkstra's Max Speed,Path Length,24801.66,23917.12,15575.77,242604473.38
+Dijkstra's Max Speed,Default Speed Distance,3302.38,3243.22,1798.01,3232822.81
+Dijkstra's Max Speed,Average Speed,51.2,51.5,10.42,108.67
+A Star Euclidean,Time,0.29,0.21,0.21,0.04
+A Star Euclidean,Iterations,9138.33,6032.0,9705.81,94202822.53
+A Star Euclidean,Travel Time,2099.95,1983.53,1249.17,1560414.92
+A Star Euclidean,Path Length,21874.84,20670.55,13244.47,175415975.98
+A Star Euclidean,Default Speed Distance,9965.98,8925.35,6559.4,43025731.81
+A Star Euclidean,Average Speed,37.11,36.5,4.83,23.31
+A Star Manhattan,Time,0.26,0.19,0.19,0.04
+A Star Manhattan,Iterations,9209.6,4984.5,10496.29,110172121.09
+A Star Manhattan,Travel Time,2144.07,1939.62,1266.45,1603889.26
+A Star Manhattan,Path Length,22110.39,20793.52,13394.49,179412424.43
+A Star Manhattan,Default Speed Distance,10546.04,9488.32,6935.89,48106614.38
+A Star Manhattan,Average Speed,36.59,35.59,4.73,22.39
+A Star Chebyshev,Time,0.26,0.19,0.17,0.03
+A Star Chebyshev,Iterations,8636.32,5684.5,9135.33,83454340.79
+A Star Chebyshev,Travel Time,2084.51,1954.38,1202.73,1446547.64
+A Star Chebyshev,Path Length,22077.62,21154.63,13364.52,178610334.7
+A Star Chebyshev,Default Speed Distance,9535.65,8783.63,5780.85,33418273.35
+A Star Chebyshev,Average Speed,37.41,37.0,4.71,22.21
+A Star Haversine,Time,0.35,0.24,0.28,0.08
+A Star Haversine,Iterations,9676.47,6034.5,10429.32,108770655.0
+A Star Haversine,Travel Time,2108.49,1983.09,1196.35,1431250.73
+A Star Haversine,Path Length,22228.83,20802.84,13441.12,180663787.22
+A Star Haversine,Default Speed Distance,9784.74,8821.72,5877.64,34546600.33
+A Star Haversine,Average Speed,37.08,36.36,5.02,25.2

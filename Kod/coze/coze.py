@@ -105,18 +105,10 @@ def dijkstra(G, orig, dest, style='length', plot=False, ):
         path.appendleft(current_node)
         current_node = G.nodes[current_node]["previous"]
     return list(path), step
-    
-
-def reconstruct_path(cameFrom, current):
-    total_path = {current}
-    while current in cameFrom.Keys:
-        current = cameFrom[current]
-        total_path.prepend(current)
-    return total_path
 
 # A* finds a path from start to goal.
 # h is the heuristic function. h(n) estimates the cost to reach goal from node n.
-def a_star(G, orig, dest, heuristic, plot=False):
+def a_star(G, orig, dest, heuristic, style='length', plot=False):
     for node in G.nodes:
         G.nodes[node]["previous"] = None
         G.nodes[node]["size"] = 0
@@ -140,7 +132,7 @@ def a_star(G, orig, dest, heuristic, plot=False):
             break
         for edge in G.out_edges(node):
             if plot:
-                G = style_visited_edge((edge[0], edge[1], 0))
+                G = style_visited_edge(edge[0], edge[1], 0)
             neighbor = edge[1]
             tentative_g_score = G.nodes[node]["g_score"] + heuristic((G.nodes[node]['x'], G.nodes[node]['y']), (G.nodes[neighbor]['x'], G.nodes[neighbor]['y']))
             if tentative_g_score < G.nodes[neighbor]["g_score"]:
@@ -296,79 +288,6 @@ def double_sweep(G, start=None):
 
     return path
 
-def distance(G, node1, node2):
-    x1, y1 = G.nodes[node1]["x"], G.nodes[node1]["y"]
-    x2, y2 = G.nodes[node2]["x"], G.nodes[node2]["y"]
-    return ((x2 - x1)**2 + (y2 - y1)**2)**0.5
-
-def a_star_algorithm(G, start, end, heuristic, style='length'):
-    # Priority queue, containing pairs of (estimated_total_cost, current_node, current_actual_cost)
-    queue = [(0, start, 0)]
-    # Distances and previous_nodes contain actual costs and paths discovered so far
-    distances = {node: float('infinity') for node in G.nodes}
-    previous_nodes = {node: None for node in G.nodes}
-    distances[start] = 0
-    
-    # Coordinates for the start and end are constants, so calculate outside the while loop
-    start_coord = (G.nodes[start]['y'], G.nodes[start]['x'])
-    end_coord = (G.nodes[end]['y'], G.nodes[end]['x'])
-    # Set of visited nodes to avoid revisiting them
-    visited = set()
-    
-    # Variable to keep track of the number of iterations
-    iteration_count = 0
-
-    while queue:
-        _, current_node, current_actual_cost = heapq.heappop(queue)
-        
-        # If the current node is the destination, we can break the loop early
-        if current_node == end:
-            break
-
-        # If we have already visited this node, skip processing
-        if current_node in visited:
-            continue
-
-        # Mark the current node as visited
-        visited.add(current_node)
-
-        # Explore neighbors
-        for neighbor in G.adj[current_node]:
-            edge_data = G.edges[current_node, neighbor, 0]
-            edge_length = edge_data.get('length', 0)
-            
-            
-            # Calculate the actual cost to reach the neighbor
-            if style == 'length':
-                neighbor_actual_cost = current_actual_cost + edge_length
-            else:
-                edge_speed = get_edge_speed(G, current_node, neighbor, 0)
-                neighbor_actual_cost = current_actual_cost + (edge_length / (edge_speed / 3.6))
-            neighbor_coord = (G.nodes[neighbor]['y'], G.nodes[neighbor]['x'])
-
-            # If this path to the neighbor is better, consider updating the route
-            if neighbor_actual_cost < distances[neighbor]:
-                distances[neighbor] = neighbor_actual_cost
-                previous_nodes[neighbor] = current_node
-                
-                # Calculate the estimated cost to the end and push to the queue
-                estimated_cost_to_end = heuristic(neighbor_coord, end_coord) 
-                estimated_total_cost = neighbor_actual_cost + estimated_cost_to_end
-                heapq.heappush(queue, (estimated_total_cost, neighbor, neighbor_actual_cost))
-        iteration_count += 1
-        
-    # Path construction from end to start
-    path = deque()
-    while end is not None:
-        path.appendleft(end)
-        end = previous_nodes[end]
-
-    #print("Number of iterations A*:", iteration_count)
-
-    return list(path), iteration_count
-
-
-
 def plot_graph(G):
     ox.plot_graph(
         G,
@@ -436,21 +355,9 @@ def haversine(coord1, coord2):
     r = 6371  # Radius of Earth in kilometers
     return c * r
 
-def landmark_heuristic(node, end, landmark_distances):
-    """
-    Calculate heuristic based on landmark precomputed distances.
-    For simplification, we use one landmark and the triangle inequality here.
-    """
-    landmark = 'some_landmark_id'  # Suppose we use a specific landmark
-    # Ensuring admissibility by taking the max of two possible triangle inequality applications
-    heuristic_estimate = max(
-        landmark_distances[landmark][end] - landmark_distances[landmark][node],
-        landmark_distances[landmark][node] - landmark_distances[landmark][end]
-    )
-    return max(0, heuristic_estimate)  # Ensure we don't return negative values
-
-# Within the A* function, call the heuristic like so:
-#estimated_cost_to_end = landmark_heuristic(current_node, end_node, landmark_distances)
+def maxspeed_heuristic(coord1, coord2):
+    (x1, y1), (x2, y2) = coord1, coord2
+    return max(abs(x1 - x2), abs(y1 - y2))
 
 
 def bellman_ford(G, source):
@@ -622,8 +529,12 @@ def dist(a, b):
      return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
 def main():
+
+    test_number = 'Test1'
+
     # Specify the path to your local .osm file
-    local_osm_file_path = 'Nowy_York_map.graphml'
+    if test_number == 'Test1':
+        local_osm_file_path = 'Nowy_York_map.graphml'
     #download_map('Wroclaw, Poland', local_osm_file_path)
     try:
         G = load_local_map(local_osm_file_path)
@@ -639,13 +550,13 @@ def main():
     db = client['PracaMagisterska']
 
 ################ Test 2 ################
-    collection = db['Test2']
+    collection = db[test_number]
 
     print(ox.basic_stats(G))
     
     start_nodes = []
     end_nodes = []
-    with open('start_end_nodes_test1.txt', 'r') as file:
+    with open(f'{test_number}_start_end_nodes.txt', 'r') as file:
         lines = file.readlines()
         for line in lines:
             start, end = line.strip().split(',')
@@ -659,19 +570,13 @@ def main():
         #start_node, end_node = get_random_nodes(G)
         # Perform the algorithm calculations using the start and end nodes
 
-        start_time = time.time()
         algorithms = {
-            "Dijkstra's Algorithm": dijkstra,
-            "Dijkstra's Max Speed Algorithm": lambda G, start, end: dijkstra(G, start, end, style='maxspeed'),
-            "A* Algorithm Euclidean": lambda G, start, end: a_star_algorithm(G, start, end, euclidean_heuristic),
-            "A* Algorithm Max Speed Euclidean": lambda G, start, end: a_star_algorithm(G, start, end, euclidean_heuristic, style='maxspeed'),
-            "A* Algorithm Manhattan": lambda G, start, end: a_star_algorithm(G, start, end, manhattan_heuristic),
-            "A* Algorithm Max Speed Manhattan": lambda G, start, end: a_star_algorithm(G, start, end, manhattan_heuristic, style='maxspeed'),
-            "A* Algorithm Chebyshev": lambda G, start, end: a_star_algorithm(G, start, end, chebyshev_heuristic),
-            "A* Algorithm Max Speed Chebyshev": lambda G, start, end: a_star_algorithm(G, start, end, chebyshev_heuristic, style='maxspeed'),
-            "A* Algorithm Haversine": lambda G, start, end: a_star_algorithm(G, start, end, haversine),
-            "A* Algorithm Max Speed Haversine": lambda G, start, end: a_star_algorithm(G, start, end, haversine, style='maxspeed'),
-            "A star": lambda G, start, end: a_star(G, start, end, euclidean_heuristic, plot=False),
+            "Dijkstra's": lambda G, start, end: dijkstra(G, start, end),
+            "Dijkstra's Max Speed": lambda G, start, end: dijkstra(G, start, end, style='maxspeed'),
+            "A Star Euclidean": lambda G, start, end: a_star(G, start, end, euclidean_heuristic),
+            "A Star Manhattan": lambda G, start, end: a_star(G, start, end, manhattan_heuristic),
+            "A Star Chebyshev": lambda G, start, end: a_star(G, start, end, chebyshev_heuristic),
+            "A Star Haversine": lambda G, start, end: a_star(G, start, end, haversine),
         }
 
         result = {}
