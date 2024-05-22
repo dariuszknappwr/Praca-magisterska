@@ -6,6 +6,9 @@ import random
 from pymongo import MongoClient
 import statistics
 import csv
+import numpy as np
+
+test_number = 'Test2'
 
 client = MongoClient('mongodb://localhost:27017/')
 
@@ -13,12 +16,12 @@ client = MongoClient('mongodb://localhost:27017/')
 db = client['PracaMagisterska']
 
 ########## Test 1 ##########
-collection = db['Test2']
+collection = db[test_number]
 
 results = list(collection.find())
 
 algorithms = ['Dijkstra\'s', 'Dijkstra\'s Max Speed', 'A Star Euclidean', 'A Star Manhattan', 'A Star Chebyshev', 'A Star Haversine']
-statistics_names = ["Time", "Iterations", "Travel Time", "Path Length", "Default Speed Distance", "Average Speed"]
+statistics_names = ["Time", "Iterations", "Travel Time", "Path Length", "Missing Speed Data Distance", "Average Speed"]
 
 # Initialize a nested dictionary to store the times for each algorithm and each statistic
 times = {algorithm: {stat: [] for stat in statistics_names} for algorithm in algorithms}
@@ -32,32 +35,41 @@ for stat in statistics_names:
     fig, ax = plt.subplots()
 
     # Create a list to store the values for the statistic
-    stat_values = []
+    average_values = []
+    median_values = []
+    std_dev_values = []
+    variance_values = []
 
     # Calculate the value for each algorithm
     for algorithm in algorithms:
         value_list = times[algorithm][stat]
         if value_list:  # Check if the list is not empty
-            value = round(sum(value_list) / len(value_list), 2)
-            stat_values.append(value)
+            average_values.append(round(sum(value_list) / len(value_list), 2))
+            median_values.append(round(statistics.median(value_list),2))
+            std_dev_values.append(round(statistics.stdev(value_list),2))
+            variance_values.append(round(statistics.variance(value_list),2))
         else:
-            stat_values.append(0)
+            average_values.append(0)
+            median_values.append(0)
+            std_dev_values.append(0)
+            variance_values.append(0)
 
     # Plot the values
-    ax.bar(algorithms, stat_values)
+    
+    ax.bar(algorithms, average_values, color='blue')
     ax.set_xlabel('Algorithm')
     ax.set_ylabel(stat)
-    ax.set_title(f'{stat} for each algorithm in Test 2')
+    ax.set_title(f'{stat} for each algorithm in {test_number}')
 
     # Save the plot to a file
-    plt.savefig(f'Test2_{stat}_plot.png')
+    plt.savefig(f'{test_number}_{stat}_plot.png')
 
     # Show the plot
-    plt.show()
+    #plt.show()
 
 
 # Open the CSV file in write mode
-with open('Test2_statistics.csv', 'w', newline='') as csvfile:
+with open(f'{test_number}_2_statistics.csv', 'w', newline='', encoding='utf-8') as csvfile:
     writer = csv.writer(csvfile)
 
     # Now you can calculate and write the statistics to the CSV file
@@ -72,3 +84,24 @@ with open('Test2_statistics.csv', 'w', newline='') as csvfile:
                 writer.writerow([algorithm, stat, average, median, std_dev, variance])
             else:
                 writer.writerow([algorithm, stat, 'No data', '', '', ''])
+
+# Open the CSV file in write mode
+with open(f'{test_number}_2_statistics_table.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    writer = csv.writer(csvfile)
+
+    # Write the header row
+    header = ['Mierzona wartość'] + algorithms
+    writer.writerow(header)
+
+    # Now you can calculate and write the statistics to the CSV file
+    for stat in statistics_names:
+        row = [stat]
+        for algorithm in algorithms:
+            time_list = times[algorithm][stat]
+            if time_list:  # Check if the list is not empty
+                average = round(sum(time_list) / len(time_list), 2)
+                std_dev = round(statistics.stdev(time_list), 2)
+                row.append(f'{average} ± {std_dev}')
+            else:
+                row.append('No data')
+        writer.writerow(row)
