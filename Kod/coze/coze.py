@@ -19,7 +19,8 @@ import psutil
 from floyd_warshall import floyd_warshall
 from johnson import johnson
 from test_map import get_test_map
-from generate_random_nodes import get_random_nodes
+from generate_random_nodes import get_start_end_nodes
+from tests_one_one import tests_one_one
 
 
 
@@ -42,99 +43,9 @@ def get_random_nodes(G):
         end = random.choice(nodes)
     return start, end
 
-def dijkstra(G, orig, dest, style='length', plot=False, ):
-    for node in G.nodes:
-        G.nodes[node]["visited"] = False
-        G.nodes[node]["distance"] = float("inf")
-        G.nodes[node]["previous"] = None
-        G.nodes[node]["size"] = 0
-    #for edge in G.edges:
-        #style_unvisited_edge(G, edge)
-    G.nodes[orig]["distance"] = 0
-    G.nodes[orig]["size"] = 50
-    G.nodes[dest]["size"] = 50
-    pq = [(0, orig)]
-    step = 0
-    while pq:
-        _, node = heapq.heappop(pq)
-        if node == dest:
-            #if plot:
-                #print("Iterations:", step)
-                #plot_graph()
-            break
-        if G.nodes[node]["visited"]: continue
-        G.nodes[node]["visited"] = True
-        for edge in G.out_edges(node):
-            #style_visited_edge(G, (edge[0], edge[1], 0))
-            neighbor = edge[1]
-            if style == 'length':
-                weight = G.edges[(edge[0], edge[1], 0)]["length"]
-            else:
-                weight = G.edges[(edge[0], edge[1], 0)]["weight"]
 
-            if G.nodes[neighbor]["distance"] > G.nodes[node]["distance"] + weight:
-                G.nodes[neighbor]["distance"] = G.nodes[node]["distance"] + weight
-                G.nodes[neighbor]["previous"] = node
-                heapq.heappush(pq, (G.nodes[neighbor]["distance"], neighbor))
-                #for edge2 in G.out_edges(neighbor):
-                    #style_active_edge(G, (edge2[0], edge2[1], 0))
-        step += 1
 
-    # Path construction from end to start
-    path = deque()
-    current_node = dest
-    while current_node is not None:
-        path.appendleft(current_node)
-        current_node = G.nodes[current_node]["previous"]
-    return list(path), step
 
-# A* finds a path from start to goal.
-# h is the heuristic function. h(n) estimates the cost to reach goal from node n.
-def a_star(G, orig, dest, heuristic, style='length', plot=False):
-    for node in G.nodes:
-        G.nodes[node]["previous"] = None
-        G.nodes[node]["size"] = 0
-        G.nodes[node]["g_score"] = float("inf")
-        G.nodes[node]["f_score"] = float("inf")
-    if plot:
-        for edge in G.edges:
-            G = style_unvisited_edge(G, edge)
-    G.nodes[orig]["size"] = 50
-    G.nodes[dest]["size"] = 50
-    G.nodes[orig]["g_score"] = 0
-    G.nodes[orig]["f_score"] = heuristic((G.nodes[orig]['x'], G.nodes[orig]['y']), (G.nodes[dest]['x'], G.nodes[dest]['y']))
-    pq = [(G.nodes[orig]["f_score"], orig)]
-    step = 0
-    while pq:
-        _, node = heapq.heappop(pq)
-        if node == dest:
-            if plot:
-                print("Iterations:", step)
-                plot_graph()
-            break
-        for edge in G.out_edges(node):
-            if plot:
-                G = style_visited_edge(edge[0], edge[1], 0)
-            neighbor = edge[1]
-            tentative_g_score = G.nodes[node]["g_score"] + heuristic((G.nodes[node]['x'], G.nodes[node]['y']), (G.nodes[neighbor]['x'], G.nodes[neighbor]['y']))
-            if tentative_g_score < G.nodes[neighbor]["g_score"]:
-                G.nodes[neighbor]["previous"] = node
-                G.nodes[neighbor]["g_score"] = tentative_g_score
-                G.nodes[neighbor]["f_score"] = tentative_g_score + heuristic((G.nodes[neighbor]['x'], G.nodes[neighbor]['y']), (G.nodes[dest]['x'], G.nodes[dest]['y']))
-                heapq.heappush(pq, (G.nodes[neighbor]["f_score"], neighbor))
-                if plot:
-                    for edge2 in G.out_edges(neighbor):
-                        G = style_active_edge((edge2[0], edge2[1], 0))
-        step += 1
-
-    path = deque()
-    while dest is not None:
-        path.appendleft(dest)
-        dest = G.nodes[dest]['previous']
-
-    #print("Number of iterations A*:", iteration_count)
-
-    return list(path), step
 
 def yen_ksp(G, source, target, K=1):
     A = [nx.shortest_path(G, source, target, weight='length')]
@@ -192,30 +103,7 @@ def plot_graph(G, path, title):
     fig, ax = ox.plot_graph_route(G, path, route_color='green', route_linewidth=6, node_size=0, bgcolor='k')
     plt.show()
 
-def analyze_path(G, path):
-    path_length = 0
-    path_travel_time = 0
-    missing_speed_data_distance = 0
 
-    for i in range(len(path) - 1):
-        u, v = path[i], path[i + 1]
-        key = 0  # Assuming a simple graph
-        edge_data = G.get_edge_data(u, v, key)
-        
-        if edge_data:
-            edge_length = edge_data['length']
-            edge_speed= edge_data['maxspeed']
-            edge_travel_time = edge_length / (edge_speed / 3.6)  # travel time for edge
-            path_length += edge_length
-            path_travel_time += edge_travel_time
-
-            # Check if a default speed was used
-            if edge_data['missingSpeedData']:
-                missing_speed_data_distance += edge_length
-
-    average_speed = (path_length / path_travel_time * 3.6) if path_travel_time > 0 else 0  # Convert m/s to km/h
-
-    return path_travel_time, path_length, missing_speed_data_distance, average_speed
 
 
 def dijkstra_end_node(G, start):
@@ -269,77 +157,6 @@ def double_sweep(G, start=None):
     end_of_path, path = dijkstra_end_node(G, path_to_furthest[-1])
 
     return path
-
-def plot_graph(G):
-    ox.plot_graph(
-        G,
-        node_size =  [ G.nodes[node]["size"] for node in G.nodes ],
-        edge_color = [ G.edges[edge]["color"] for edge in G.edges ],
-        edge_alpha = [ G.edges[edge]["alpha"] for edge in G.edges ],
-        edge_linewidth = [ G.edges[edge]["linewidth"] for edge in G.edges ],
-        node_color = "white",
-        bgcolor = "#18080e"
-    )
-
-def style_unvisited_edge(G, edge):        
-    G.edges[edge]["color"] = "blue"
-    G.edges[edge]["alpha"] = 0.2
-    G.edges[edge]["linewidth"] = 0.5
-    return G
-
-def style_visited_edge(G, edge):
-    G.edges[edge]["color"] = "blue"
-    G.edges[edge]["alpha"] = 1
-    G.edges[edge]["linewidth"] = 1
-    return G
-
-def style_active_edge(G, edge):
-    G.edges[edge]["color"] = 'blue'
-    G.edges[edge]["alpha"] = 1
-    G.edges[edge]["linewidth"] = 1
-    return G
-
-def style_path_edge(G, edge):
-    G.edges[edge]["color"] = "white"
-    G.edges[edge]["alpha"] = 1
-    G.edges[edge]["linewidth"] = 1
-    return G
-
-def zero_heuristic(coord1, coord2):
-    return 0
-
-def infinity_heuristic(coord1, coord2):
-    return float('inf')
-
-def euclidean_heuristic(coord1, coord2):
-    (x1, y1), (x2, y2) = coord1, coord2
-    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-
-def manhattan_heuristic(coord1, coord2):
-    (x1, y1), (x2, y2) = coord1, coord2
-    return abs(x1 - x2) + abs(y1 - y2)
-
-def chebyshev_heuristic(coord1, coord2):
-    (x1, y1), (x2, y2) = coord1, coord2
-    return max(abs(x1 - x2), abs(y1 - y2))
-
-def haversine(coord1, coord2):
-    # Converts latitude and longitude to
-    # spherical coordinates in radians.
-    lat1, lon1 = map(math.radians, coord1)
-    lat2, lon2 = map(math.radians, coord2)
-
-    # Haversine formula
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-    c = 2 * math.asin(math.sqrt(a))
-    r = 6371  # Radius of Earth in kilometers
-    return c * r
-
-def maxspeed_heuristic(coord1, coord2):
-    (x1, y1), (x2, y2) = coord1, coord2
-    return max(abs(x1 - x2), abs(y1 - y2))
 
 def plot_heatmap(G, algorithm_attr):
     # Get attribute values
@@ -470,7 +287,7 @@ def set_speed_weigths(G):
     return G
 def main():
 
-    test_number = 'Test11'
+    test_number = 'Test5'
     G = get_test_map(test_number)
     print("Pobrano mape testowa")
 
@@ -489,42 +306,11 @@ def main():
     
     start_nodes, end_nodes = get_start_end_nodes(test_number)
 
-    if test_number == 'Test1' or test_number == 'Test2' or test_number == 'Test3' or test_number == 'Test4' or test_number == 'Test5':
-        for i in range(len(start_nodes)):
-            
-            start_node = start_nodes[i]
-            end_node = end_nodes[i]
-
-            algorithms = {
-                "Dijkstra's": lambda G, start, end: dijkstra(G, start, end),
-                "Dijkstra's Max Speed": lambda G, start, end: dijkstra(G, start, end, style='maxspeed'),
-                "A Star Euclidean": lambda G, start, end: a_star(G, start, end, euclidean_heuristic),
-                "A Star Manhattan": lambda G, start, end: a_star(G, start, end, manhattan_heuristic),
-                "A Star Chebyshev": lambda G, start, end: a_star(G, start, end, chebyshev_heuristic),
-                "A Star Haversine": lambda G, start, end: a_star(G, start, end, haversine),
-            }
-
-            result = {}
-            for algorithm_name, algorithm_func in algorithms.items():
-                start_time = time.time()
-                path, iterations = algorithm_func(G, start_node, end_node)
-                end_time = time.time()
-                algorithm_time = end_time - start_time
+    if test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
+        result = tests_one_one(G, start_nodes, end_nodes)
 
 
-                if path:
-                    travel_time, path_length, default_speed_distance, average_speed = analyze_path(G, path)
-                    result.update({
-                        f"{algorithm_name} Time": algorithm_time,
-                        f"{algorithm_name} Iterations": iterations,
-                        f"{algorithm_name} Path": path,
-                        f"{algorithm_name} Travel Time": travel_time,
-                        f"{algorithm_name} Path Length": path_length,
-                        f"{algorithm_name} Missing Speed Data Distance": default_speed_distance,
-                        f"{algorithm_name} Average Speed": average_speed
-                    })
-
-            collection.insert_one(result)
+    collection.insert_one(result)
     
     
     if test_number == 'Test6' or test_number == 'Test7':
@@ -643,6 +429,7 @@ def main():
 
         plot_heatmap(G, 'algorithm_uses')
 
+'''
         # Using Yen's KSP Algorithm
     ksp_paths = yen_ksp(G, start, end, K=2)
     for i, path in enumerate(ksp_paths, start=1):
@@ -665,7 +452,7 @@ def main():
         print(f"Average Speed: {average_speed} km/h")
         plot_graph(G, double_sweep_path, 'Double Sweep Route')
 
-
+'''
 ############################
 
 '''

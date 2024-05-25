@@ -25,3 +25,14 @@ for _ in range(100):
 with open('Test12_start_end_nodes.txt', 'w') as file:
     for start_node, end_node in start_end_pairs:
         file.write(f"{start_node},{end_node}\n")
+
+def get_start_end_nodes(test_number):
+    start_nodes = []
+    end_nodes = []
+    with open(f'{test_number}/{test_number}_start_end_nodes.txt', 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            start, end = line.strip().split(',')
+            start_nodes.append(int(start.strip()))
+            end_nodes.append(int(end.strip()))
+    return start_nodes, end_nodes
