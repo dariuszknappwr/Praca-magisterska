@@ -1,0 +1,36 @@
+Dijkstra's,Time,0.23,0.23,0.13,0.02
+Dijkstra's,Iterations,13943.49,13526.0,8555.98,73204875.73
+Dijkstra's,Travel Time,1350.01,1294.52,666.75,444556.39
+Dijkstra's,Path Length,16453.69,15805.3,8020.76,64332644.24
+Dijkstra's,Default Speed Distance,173.9,0.0,323.87,104894.76
+Dijkstra's,Average Speed,43.95,43.26,6.56,43.03
+Dijkstra's Max Speed,Time,0.28,0.28,0.16,0.03
+Dijkstra's Max Speed,Iterations,13518.82,13162.0,8551.3,73124783.99
+Dijkstra's Max Speed,Travel Time,1206.11,1189.87,563.26,317263.28
+Dijkstra's Max Speed,Path Length,17422.11,16245.45,8789.96,77263327.97
+Dijkstra's Max Speed,Default Speed Distance,88.27,0.0,224.34,50327.01
+Dijkstra's Max Speed,Average Speed,51.21,49.43,7.77,60.34
+A Star Euclidean,Time,0.11,0.09,0.06,0.0
+A Star Euclidean,Iterations,3034.34,2276.5,2721.7,7407658.45
+A Star Euclidean,Travel Time,1375.65,1284.58,679.32,461475.73
+A Star Euclidean,Path Length,16563.37,15909.25,8074.47,65197002.3
+A Star Euclidean,Default Speed Distance,199.85,0.0,436.44,190482.96
+A Star Euclidean,Average Speed,43.46,42.47,6.67,44.47
+A Star Manhattan,Time,0.09,0.08,0.05,0.0
+A Star Manhattan,Iterations,2771.03,2028.0,2538.6,6444478.07
+A Star Manhattan,Travel Time,1400.3,1402.21,680.11,462555.73
+A Star Manhattan,Path Length,16728.45,16262.79,8179.73,66907909.75
+A Star Manhattan,Default Speed Distance,210.82,0.0,438.84,192577.64
+A Star Manhattan,Average Speed,42.99,42.82,6.25,39.02
+A Star Chebyshev,Time,0.1,0.08,0.05,0.0
+A Star Chebyshev,Iterations,3194.46,2338.5,3062.42,9378429.6
+A Star Chebyshev,Travel Time,1423.11,1353.97,698.06,487287.06
+A Star Chebyshev,Path Length,16835.53,16268.16,8240.84,67911467.02
+A Star Chebyshev,Default Speed Distance,195.21,5.61,365.24,133402.68
+A Star Chebyshev,Average Speed,42.62,42.2,5.49,30.15
+A Star Haversine,Time,0.12,0.1,0.07,0.0
+A Star Haversine,Iterations,3033.93,2299.0,2718.21,7388683.92
+A Star Haversine,Travel Time,1382.62,1284.58,686.12,470759.37
+A Star Haversine,Path Length,16574.82,15909.25,8092.93,65495509.14
+A Star Haversine,Default Speed Distance,200.02,0.0,436.26,190323.66
+A Star Haversine,Average Speed,43.31,42.47,6.55,42.91

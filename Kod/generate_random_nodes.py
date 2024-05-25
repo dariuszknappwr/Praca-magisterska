@@ -8,7 +8,7 @@ def get_random_nodes(G):
         end = random.choice(nodes)
     return start, end
 # Load graph from file
-G = ox.load_graphml(filepath='Zalipie_map.graphml')
+G = ox.load_graphml(filepath='Maps/Plonsk_map.graphml')
 
 # print out number of vertices and edges
 print("Number of nodes: ", G.number_of_nodes())
@@ -22,6 +22,6 @@ for _ in range(100):
     start_end_pairs.append((start_node, end_node))
 
 # Save start and end nodes to file
-with open('Test5_start_end_nodes.txt', 'w') as file:
+with open('Test12_start_end_nodes.txt', 'w') as file:
     for start_node, end_node in start_end_pairs:
         file.write(f"{start_node},{end_node}\n")

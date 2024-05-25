@@ -10,6 +10,9 @@ import networkx as nx
 #ox.save_graphml(merged_graph, filepath="merged_map.graphml")
 #print("Zapisano graf do pliku")
 
-G = ox.graph_from_place("Zalipie, Poland", network_type='drive')
-ox.save_graphml(G, filepath="Zalipie_map.graphml")
+G = ox.graph_from_place("Płońsk, Mazowieckie, Poland", network_type='drive')
+ox.save_graphml(G, filepath="Plonsk_map.graphml")
 print("Zapisano graf do pliku")
+#print out number of vertices and edges
+print("Number of nodes: ", G.number_of_nodes())
+print("Number of edges: ", G.number_of_edges())

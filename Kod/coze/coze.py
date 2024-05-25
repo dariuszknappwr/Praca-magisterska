@@ -1,4 +1,3 @@
-from memory_profiler import profile
 import osmnx as ox
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -9,10 +8,18 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import deque
-from networkx.algorithms.shortest_paths.weighted import single_source_dijkstra
 import matplotlib.colors as mcolors
 import time
 from pymongo import MongoClient
+from bellman_ford import bellman_ford
+from spfa import spfa
+from spfa import initialize_spfa_edge_usage
+from bellman_ford import initialize_bellman_ford_edge_usage
+import psutil
+from floyd_warshall import floyd_warshall
+from johnson import johnson
+from test_map import get_test_map
+from generate_random_nodes import get_random_nodes
 
 
 
@@ -27,14 +34,6 @@ def download_map(city, osm_file_path):
     ox.save_graphml(G, filepath=osm_file_path)
     return G
 
-def load_local_map(osm_file_path):
-    # Check if the file exists
-    if os.path.isfile(osm_file_path):
-        G = ox.load_graphml(osm_file_path)
-        return G
-    else:
-        raise FileNotFoundError(f"OSM file cannot be found: {osm_file_path}")
-
 
 def get_random_nodes(G):
     nodes = list(G.nodes)
@@ -43,7 +42,6 @@ def get_random_nodes(G):
         end = random.choice(nodes)
     return start, end
 
-#@profile
 def dijkstra(G, orig, dest, style='length', plot=False, ):
     for node in G.nodes:
         G.nodes[node]["visited"] = False
@@ -92,7 +90,6 @@ def dijkstra(G, orig, dest, style='length', plot=False, ):
 
 # A* finds a path from start to goal.
 # h is the heuristic function. h(n) estimates the cost to reach goal from node n.
-#@profile
 def a_star(G, orig, dest, heuristic, style='length', plot=False):
     for node in G.nodes:
         G.nodes[node]["previous"] = None
@@ -344,39 +341,6 @@ def maxspeed_heuristic(coord1, coord2):
     (x1, y1), (x2, y2) = coord1, coord2
     return max(abs(x1 - x2), abs(y1 - y2))
 
-
-def bellman_ford(G, source):
-    # Step 1: Prepare distance and predecessor dictionaries
-    distance = dict.fromkeys(G, float('infinity'))
-    distance[source] = 0
-    pred = {node: None for node in G}
-
-    # Step 2: Relax edges repeatedly
-    for _ in range(len(G) - 1):
-        for u, v, data in G.edges(data=True):
-            if distance[u] + data['length'] < distance[v]:
-                distance[v] = distance[u] + data['length']
-                pred[v] = u
-
-    # Step 3: Check for negative weight cycles
-    for u, v, data in G.edges(data=True):
-        if distance[u] + data['length'] < distance[v]:
-            raise nx.NetworkXUnbounded("Graph contains a negative weight cycle.")
-    
-    return distance, pred
-
-
-def initialize_edge_usage(G):
-    """
-    Initialize or reset 'algorithm_uses' attribute for all edges to 0.
-    """
-    nx.set_edge_attributes(G, 0, 'algorithm_uses')
-
-
-
-
-
-
 def plot_heatmap(G, algorithm_attr):
     # Get attribute values
     edge_attributes = list(nx.get_edge_attributes(G, algorithm_attr).values())
@@ -412,59 +376,14 @@ def plot_heatmap(G, algorithm_attr):
 
 
 
-def spfa(G, start):
-    initialize_edge_usage(G)
-    
-    distances = {node: float('infinity') for node in G.nodes()}
-    distances[start] = 0
-    queue = deque([start])
-    in_queue = {node: False for node in G.nodes()}
-    in_queue[start] = True
-
-    while queue:
-        u = queue.popleft()
-        in_queue[u] = False
-        
-        # Loop through each edge that comes out of `u`
-        for v, adj_data in G.adj[u].items():
-            for key, data in adj_data.items():  # Here we include the key in the iteration
-                weight = data['length']
-                if distances[u] + weight < distances[v]:
-                    distances[v] = distances[u] + weight
-                    G.edges[u, v, key]['algorithm_uses'] += 1
-                    if not in_queue[v]:
-                        queue.append(v)
-                        in_queue[v] = True
-
-    return distances
 
 
-def floyd_warshall(G):
-    # Initialize the distance and path matrices
-    dist = {n: {m: float('inf') for m in G.nodes} for n in G.nodes}
-    for n in G.nodes:
-        dist[n][n] = 0
-    pred = {n: {m: None for m in G.nodes} for n in G.nodes}
 
-    # Initialize the distance to all edges that are present
-    for u, v, data in G.edges(data=True):
-        dist[u][v] = data['length']
-        pred[u][v] = u
-    
-    for k in G.nodes:
-        for i in G.nodes:
-            for j in G.nodes:
-                if dist[i][k] + dist[k][j] < dist[i][j]:
-                    dist[i][j] = dist[i][k] + dist[k][j]
-                    pred[i][j] = pred[k][j]
 
-    # Check for negative weight cycles
-    for n in G.nodes:
-        if dist[n][n] < 0:
-            print("Graph contains a negative-weight cycle")
-            return None, None
 
-    return dist, pred
+def initialize_edge_usage(G):
+    #Initialize or reset 'algorithm_uses' attribute for all edges to 0.
+    nx.set_edge_attributes(G, 0, 'algorithm_uses')
 
 def update_edge_usage(G, pred):
     # Reset 'algorithm_uses' to 0 for all edges
@@ -508,6 +427,12 @@ def johnsons_algorithm_simplified(G):
 
     return distances, predecessors
 
+
+
+
+
+    
+
 def set_speed_weigths(G):
     for edge in G.edges:
         # Cleaning the "maxspeed" attribute, some values are lists, some are strings, some are None
@@ -545,24 +470,9 @@ def set_speed_weigths(G):
     return G
 def main():
 
-    test_number = 'Test2'
-
-    # Specify the path to your local .osm file
-    if test_number == 'Test1':
-        local_osm_file_path = 'Nowy_York_map.graphml'
-    elif test_number == 'Test2':
-        local_osm_file_path = 'Berlin_map.graphml'
-    elif test_number == 'Test3':
-        local_osm_file_path = 'Lubelskie_map.graphml'
-    elif test_number == 'Test4':
-        local_osm_file_path = 'Wroclaw_map.graphml'
-    elif test_number == 'Test5':
-        local_osm_file_path = 'Zalipie_map.graphml'
-    try:
-        G = load_local_map(local_osm_file_path)
-    except FileNotFoundError as e:
-        print(e)
-        return
+    test_number = 'Test11'
+    G = get_test_map(test_number)
+    print("Pobrano mape testowa")
 
     G = set_speed_weigths(G)
     print("Ustawiono wagi grafu")
@@ -577,22 +487,13 @@ def main():
 
     print(ox.basic_stats(G))
     
-    start_nodes = []
-    end_nodes = []
-    with open(f'{test_number}_start_end_nodes.txt', 'r') as file:
-        lines = file.readlines()
-        for line in lines:
-            start, end = line.strip().split(',')
-            start_nodes.append(int(start.strip()))
-            end_nodes.append(int(end.strip()))
+    start_nodes, end_nodes = get_start_end_nodes(test_number)
 
-    if test_number == 'Test1' or 'Test2' or 'Test3' or 'Test4' or 'Test5':
+    if test_number == 'Test1' or test_number == 'Test2' or test_number == 'Test3' or test_number == 'Test4' or test_number == 'Test5':
         for i in range(len(start_nodes)):
             
             start_node = start_nodes[i]
             end_node = end_nodes[i]
-            #start_node, end_node = get_random_nodes(G)
-            # Perform the algorithm calculations using the start and end nodes
 
             algorithms = {
                 "Dijkstra's": lambda G, start, end: dijkstra(G, start, end),
@@ -623,16 +524,146 @@ def main():
                         f"{algorithm_name} Average Speed": average_speed
                     })
 
-            # Insert the result into the collection
             collection.insert_one(result)
-    if test_number == 'Test6':
-            distances = bellman_ford(G, start)
-            if distances:
-                plot_heatmap(G, 'algorithm_uses')
+    
+    
+    if test_number == 'Test6' or test_number == 'Test7':
+        initialize_spfa_edge_usage(G)
+        initialize_bellman_ford_edge_usage(G)
+        for i in range(len(start_nodes)):
+            start_node = start_nodes[i]
+            end_node = end_nodes[i]
 
-            distances = spfa(G, start)
+            start_time = time.time()
+            distances, pred = bellman_ford(G, start_node)
+            end_time = time.time()
+            bellman_ford_algorithm_time = end_time - start_time
+
+            distSum = 0
+            bellman_ford_finite_length_paths_count = 0
+            for end in end_nodes:
+                if distances[end] != float('inf'):
+                    distSum += distances[end]
+                    count += 1
+            if count > 0:
+                bellman_ford_dist_average = distSum / bellman_ford_finite_length_paths_count
+            else:
+                bellman_ford_dist_average = float('inf')
+
+            start_time = time.time()
+            distances = spfa(G, start_node)
+            end_time = time.time()
+            spfa_algorithm_time = end_time - start_time
+
+            distSum = 0
+            spfa_finite_length_paths_count = 0
+            for end in end_nodes:
+                if distances[end] != float('inf'):
+                    distSum += distances[end]
+                    count += 1
+            if count > 0:
+                spfa_dist_average = distSum / spfa_finite_length_paths_count
+            else:
+                spfa_dist_average = float('inf')
+
+            result = {}
             if distances:
-                plot_heatmap(G, 'algorithm_uses')
+                result.update({
+                    f"Bellman Ford Time": bellman_ford_algorithm_time,
+                    f"Bellman Ford Average Distance": bellman_ford_dist_average,
+                    f"Bellman Ford Finite Length Paths Count": bellman_ford_finite_length_paths_count,
+                    f"SPFA Time": spfa_algorithm_time,
+                    f"SPFA Average Distance": spfa_dist_average,
+                    f"SPFA Finite Length Paths Count": spfa_finite_length_paths_count
+                    })
+                collection.insert_one(result)
+        plot_heatmap(G, 'spfa_algorithm_uses')
+        spfa_sum = 0
+        bellman_ford_sum = 0
+        for u,v,data in G.edges(data=True):
+            spfa_sum += data['spfa_algorithm_uses']
+            bellman_ford_sum += data['bellman_ford_algorithm_uses']
+        print('SPFA Iteracje: ', spfa_sum)
+        plot_heatmap(G, 'bellman_ford_algorithm_uses')
+        print('Bellman Ford Iteracje: ', bellman_ford_sum)
+
+            
+
+    if test_number == 'Test10' or test_number == 'Test11':
+        # Ensure the Graph has a pos attribute for plotting
+        G = ox.project_graph(G)
+
+        # Initialize 'algorithm_uses' for all edges to 0
+        initialize_edge_usage(G)
+        # Run Floyd-Warshall algorithm
+        start_time = time.time()
+        dist, pred = floyd_warshall(G)
+        end_time = time.time()
+        floyd_warshall_algorithm_time = end_time - start_time
+        
+        # Update edge usage based on the Floyd-Warshall algorithm
+        if dist and pred:
+            update_edge_usage(G, pred)
+            # Plot heatmap
+            plot_heatmap(G, 'algorithm_uses')
+
+        
+        # To be placed within the `main` function, replacing the previous heatmap plotting section
+
+        # Initialize 'length' for all edges to zero
+        initialize_edge_usage(G)
+
+        start_time = time.time()
+        distances, predecessors = johnson(G)
+        end_time = time.time()
+        johnsons_algorithm_time = end_time - start_time
+
+        if distances and predecessors:
+            update_edge_usage(G, pred)
+            # Plot heatmap
+            plot_heatmap(G, 'algorithm_uses')
+
+        print("Floyd-Warshall Time: ", floyd_warshall_algorithm_time)
+        print("Johnson's Algorithm Time: ", johnsons_algorithm_time)
+
+        floyd_warshall_sum = 0
+        johnsons_algorithm_sum = 0
+        for u,v,data in G.edges(data=True):
+            floyd_warshall_sum += data['algorithm_uses']
+            johnsons_algorithm_sum += data['algorithm_uses']
+        print('Floyd-Warshall Iteracje: ', floyd_warshall_sum)
+        print('Johnson Iteracje: ', johnsons_algorithm_sum)
+
+        collection.insert_one({
+            "Floyd-Warshall Time": floyd_warshall_algorithm_time,
+            "Johnson's Algorithm Time": johnsons_algorithm_time,
+            "Floyd-Warshall Iterations": floyd_warshall_sum,
+            "Johnson's Algorithm Iterations": johnsons_algorithm_sum
+        })
+
+        plot_heatmap(G, 'algorithm_uses')
+
+        # Using Yen's KSP Algorithm
+    ksp_paths = yen_ksp(G, start, end, K=2)
+    for i, path in enumerate(ksp_paths, start=1):
+        ksp_results = analyze_path(G, path)
+        print(f"Yen's KSP Algorithm - Path {i} Results:")
+        print(f"Travel Time: {ksp_results[0]} seconds")
+        print(f"Path Length: {ksp_results[1]} meters")
+        print(f"Default Speed Distance: {ksp_results[2]} meters")
+        print(f"Average Speed: {ksp_results[3]} km/h")
+        plot_graph(G, path, f"Yen's KSP Route {i}")
+
+       
+    double_sweep_path = double_sweep(G, start)
+    if double_sweep_path:
+        travel_time, path_length, default_speed_distance, average_speed = analyze_path(G, double_sweep_path)
+        print("Double Sweep Algorithm Results:")
+        print(f"Travel Time: {travel_time} seconds")
+        print(f"Path Length: {path_length} meters")
+        print(f"Default Speed Distance: {default_speed_distance} meters")
+        print(f"Average Speed: {average_speed} km/h")
+        plot_graph(G, double_sweep_path, 'Double Sweep Route')
 
 
 ############################

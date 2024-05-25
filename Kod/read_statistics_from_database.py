@@ -67,6 +67,57 @@ for stat in statistics_names:
     # Show the plot
     #plt.show()
 
+optimal_algorithm_count = {
+    "Dijkstra's": 0,
+    "Dijkstra's Max Speed": 0,
+    "A Star Euclidean": 0,
+    "A Star Manhattan": 0,
+    "A Star Chebyshev": 0,
+    "A Star Haversine": 0
+}
+
+satisfactory_algorithm_count = {
+    "Dijkstra's": 0,
+    "Dijkstra's Max Speed": 0,
+    "A Star Euclidean": 0,
+    "A Star Manhattan": 0,
+    "A Star Chebyshev": 0,
+    "A Star Haversine": 0
+}
+
+path_efficiency = {
+    "Dijkstra's": 0,
+    "Dijkstra's Max Speed": 0,
+    "A Star Euclidean": 0,
+    "A Star Manhattan": 0,
+    "A Star Chebyshev": 0,
+    "A Star Haversine": 0
+}
+
+speed_efficiency = {
+    "Dijkstra's": 0,
+    "Dijkstra's Max Speed": 0,
+    "A Star Euclidean": 0,
+    "A Star Manhattan": 0,
+    "A Star Chebyshev": 0,
+    "A Star Haversine": 0
+}
+
+for result in results:
+    optimal_path_length = result["Dijkstra's Path Length"]
+    optimal_speed = result["Dijkstra's Max Speed Average Speed"]
+    for algorithm in algorithms:
+        path_length = result[algorithm + ' Path Length']
+        path_length_percentage = path_length / optimal_path_length
+        if path_length_percentage <= 1:
+            optimal_algorithm_count[algorithm] += 1
+        if path_length_percentage <= 1.10:
+            satisfactory_algorithm_count[algorithm] += 1
+        path_efficiency[algorithm] += optimal_path_length / path_length
+        speed_efficiency[algorithm] += result[algorithm + ' Average Speed'] / optimal_speed
+        
+
+
 
 # Open the CSV file in write mode
 with open(f'{test_number}_2_statistics.csv', 'w', newline='', encoding='utf-8') as csvfile:
@@ -82,8 +133,15 @@ with open(f'{test_number}_2_statistics.csv', 'w', newline='', encoding='utf-8') 
                 std_dev = round(statistics.stdev(time_list), 2)
                 variance = round(statistics.variance(time_list), 2)
                 writer.writerow([algorithm, stat, average, median, std_dev, variance])
+                
             else:
                 writer.writerow([algorithm, stat, 'No data', '', '', ''])
+        writer.writerow([algorithm, 'Percent of optimal path length', round(optimal_algorithm_count[algorithm]/len(results),2), '', '', ''])
+        writer.writerow([algorithm, 'Percent of satisfactory path length', round(satisfactory_algorithm_count[algorithm]/len(results),2), '', '', ''])
+        writer.writerow([algorithm, 'Path efficiency', round(path_efficiency[algorithm]/len(results),2), '', '', ''])
+        writer.writerow([algorithm, 'Speed efficiency', round(speed_efficiency[algorithm]/len(results),2), '', '', ''])
+
+    
 
 # Open the CSV file in write mode
 with open(f'{test_number}_2_statistics_table.csv', 'w', newline='', encoding='utf-8') as csvfile:
