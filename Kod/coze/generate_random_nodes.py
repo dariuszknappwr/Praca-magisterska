@@ -1,5 +1,7 @@
 import random
 import osmnx as ox
+from test_map import get_test_map
+import os
 
 def get_random_nodes(G):
     nodes = list(G.nodes)
@@ -7,32 +9,31 @@ def get_random_nodes(G):
     while start == end:
         end = random.choice(nodes)
     return start, end
-# Load graph from file
-G = ox.load_graphml(filepath='Maps/Plonsk_map.graphml')
-
-# print out number of vertices and edges
-print("Number of nodes: ", G.number_of_nodes())
-print("Number of edges: ", G.number_of_edges())
     
-start, end = get_random_nodes(G)
-# Generate 100 random start and end nodes
-start_end_pairs = []
-for _ in range(100):
-    start_node, end_node = get_random_nodes(G)
-    start_end_pairs.append((start_node, end_node))
+def generate_start_end_nodes(G, test_number, number_of_pairs=100):
+    start, end = get_random_nodes(G)
+    start_end_pairs = []
+    for _ in range(number_of_pairs):
+        start_node, end_node = get_random_nodes(G)
+        start_end_pairs.append((start_node, end_node))
 
-# Save start and end nodes to file
-with open('Test12_start_end_nodes.txt', 'w') as file:
-    for start_node, end_node in start_end_pairs:
-        file.write(f"{start_node},{end_node}\n")
+    with open(f'{test_number}/{test_number}_start_end_nodes.txt', 'w') as file:
+        for start_node, end_node in start_end_pairs:
+            file.write(f"{start_node},{end_node}\n")
 
 def get_start_end_nodes(test_number):
     start_nodes = []
     end_nodes = []
+    #if file does not exist, then generate it
+    if not os.path.exists(f'{test_number}/{test_number}_start_end_nodes.txt'):
+        G = get_test_map(test_number)
+        generate_start_end_nodes(G, test_number)
     with open(f'{test_number}/{test_number}_start_end_nodes.txt', 'r') as file:
         lines = file.readlines()
         for line in lines:
             start, end = line.strip().split(',')
             start_nodes.append(int(start.strip()))
             end_nodes.append(int(end.strip()))
+
+    
     return start_nodes, end_nodes

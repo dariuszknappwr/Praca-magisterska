@@ -1,3 +1,5 @@
+import networkx as nx
+
 def analyze_path(G, path):
     path_length = 0
     path_travel_time = 0
@@ -22,3 +24,74 @@ def analyze_path(G, path):
     average_speed = (path_length / path_travel_time * 3.6) if path_travel_time > 0 else 0  # Convert m/s to km/h
 
     return path_travel_time, path_length, missing_speed_data_distance, average_speed
+
+
+
+def set_speed_weigths(G):
+    for edge in G.edges:
+        # Cleaning the "maxspeed" attribute, some values are lists, some are strings, some are None
+        defaultSpeed = 30
+        maxspeed = defaultSpeed
+        miles_to_km = 1.60934
+        G.edges[edge]['missingSpeedData'] = False
+        if "maxspeed" in G.edges[edge]:
+            maxspeed = G.edges[edge]["maxspeed"]
+
+            if maxspeed == 'walk':
+                maxspeed = 5
+            if type(maxspeed) == list:
+                for speed in maxspeed :
+                    if type(speed) == str:
+                        speeds = []
+                        current_speed = speed
+                        if speed == 'walk':
+                            current_speed = int(current_speed.replace("walk", "5"))
+                        if(type(current_speed) == str and 'mph' in current_speed):
+                            current_speed = int(current_speed.replace("mph", "")) * miles_to_km
+                        speeds.append(current_speed)
+                if speeds:
+                    maxspeed = min(speeds)
+                else:
+                    maxspeed = defaultSpeed
+            elif type(maxspeed) == str and 'mph' in maxspeed:
+                maxspeed = int(maxspeed.replace("mph", "")) * miles_to_km
+        else:
+            G.edges[edge]['missingSpeedData'] = True
+            maxspeed = defaultSpeed
+        G.edges[edge]["maxspeed"] = float(maxspeed)
+        # Adding the "weight" attribute (time = distance / speed)
+        G.edges[edge]["weight"] = G.edges[edge]["length"] / float(maxspeed)
+    return G
+
+def initialize_edge_usage(G):
+    #Initialize or reset 'algorithm_uses' attribute for all edges to 0.
+    nx.set_edge_attributes(G, 0, 'algorithm_uses')
+
+def update_edge_usage(G, pred):
+    # Reset 'algorithm_uses' to 0 for all edges
+    initialize_edge_usage(G)
+    
+    # Iterate over all pairs of source and target nodes
+    for source in G.nodes:
+        for target in G.nodes:
+            # Traverse the shortest path from target to source
+            while target in pred[source] and pred[source][target] is not None:
+                prev = pred[source][target]
+                
+                if prev is not None:
+                    # Increment 'algorithm_uses' by accessing the edge data directly
+                    # This works for both MultiGraphs and Graphs
+                    if G.is_multigraph(): 
+                        # For MultiGraphs, increment all edges between prev and target
+                        for key in G[prev][target]:
+                            if 'algorithm_uses' in G[prev][target][key]:
+                                G[prev][target][key]['algorithm_uses'] += 1
+                            else:
+                                G[prev][target][key]['algorithm_uses'] = 1
+                    else:
+                        # For simple Graphs
+                        if 'algorithm_uses' in G[prev][target]:
+                            G[prev][target]['algorithm_uses'] += 1
+                        else:
+                            G[prev][target]['algorithm_uses'] = 1
+                target = prev

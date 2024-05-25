@@ -2,6 +2,8 @@ from dijkstra import dijkstra
 from a_star import a_star, euclidean_heuristic, manhattan_heuristic, chebyshev_heuristic, haversine
 from graph_utils import analyze_path
 import time
+
+
 def tests_one_one(G, start_nodes, end_nodes):
     for i in range(len(start_nodes)):
         start_node = start_nodes[i]
@@ -19,10 +21,13 @@ def tests_one_one(G, start_nodes, end_nodes):
         result = {}
         for algorithm_name, algorithm_func in algorithms.items():
             start_time = time.time()
-            path, iterations = algorithm_func(G, start_node, end_node)
+            
+            function_data, consumed_memory, consumed_cpu = algorithm_func(G, start_node, end_node)
+            path, iterations = function_data
+            
             end_time = time.time()
+            
             algorithm_time = end_time - start_time
-
 
             if path:
                 travel_time, path_length, default_speed_distance, average_speed = analyze_path(G, path)
@@ -33,7 +38,9 @@ def tests_one_one(G, start_nodes, end_nodes):
                 f"{algorithm_name} Travel Time": travel_time,
                 f"{algorithm_name} Path Length": path_length,
                 f"{algorithm_name} Missing Speed Data Distance": default_speed_distance,
-                f"{algorithm_name} Average Speed": average_speed
+                f"{algorithm_name} Average Speed": average_speed,
+                f"{algorithm_name} Consumed Memory": consumed_memory,
+                f"{algorithm_name} Consumed CPU": consumed_cpu
             })
 
         return result

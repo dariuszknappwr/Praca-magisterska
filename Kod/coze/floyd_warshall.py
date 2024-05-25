@@ -1,3 +1,7 @@
+from profiler import profile
+
+
+@profile
 def floyd_warshall(G):
     # Initialize the distance and path matrices
     dist = {n: {m: float('inf') for m in G.nodes} for n in G.nodes}

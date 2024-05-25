@@ -2,9 +2,11 @@ from collections import deque
 import heapq
 from plot_graph import plot_graph, style_unvisited_edge, style_visited_edge, style_active_edge
 import math
+from profiler import profile
 
 # A* finds a path from start to goal.
 # h is the heuristic function. h(n) estimates the cost to reach goal from node n.
+@profile
 def a_star(G, orig, dest, heuristic, style='length', plot=False):
     for node in G.nodes:
         G.nodes[node]["previous"] = None
