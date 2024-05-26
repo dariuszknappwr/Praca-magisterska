@@ -15,6 +15,7 @@ def plot_graph(G):
         bgcolor = "#18080e"
     )
 
+
 def style_unvisited_edge(G, edge):        
     G.edges[edge]["color"] = "blue"
     G.edges[edge]["alpha"] = 0.2

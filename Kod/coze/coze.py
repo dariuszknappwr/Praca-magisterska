@@ -29,8 +29,7 @@ from tests_one_one_k import tests_one_one_k
 
 
 def main():
-
-    test_number = 'Test6'
+    test_number = 'Test15'
     number_of_pairs = 100
     G = get_test_map(test_number)
 
@@ -45,9 +44,9 @@ def main():
 
     collection = db[test_number]
 
-    print(ox.basic_stats(G))
+    #print(ox.basic_stats(G))
     
-    start_nodes, end_nodes = get_start_end_nodes(test_number)
+    start_nodes, end_nodes = get_start_end_nodes(test_number, number_of_pairs)
     for i in range(number_of_pairs):
         result = {}
         if test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:

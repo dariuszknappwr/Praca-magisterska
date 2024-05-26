@@ -1,52 +1,57 @@
+import heapq
 import networkx as nx
+from graph_utils import analyze_path
+from dijkstra import dijkstra
 
 def yen_ksp(G, source, target, K=1):
-    A = [nx.shortest_path(G, source, target, weight='length')]
+    A = []
     B = []
+    path = dijkstra(G, source, target)[0][0]
+    A.append(path)
+    if path[-1] != target or path[0] != source:
+        return None
 
-    for k in range(1, K):
-        for i in range(len(A[k - 1]) - 1):
-            # Initialize the spur node and root path
-            spur_node = A[k - 1][i]
-            root_path = A[k - 1][:i + 1]
+    try:
+        for k in range(1, K):
+            for i in range(0, len(A[k-1]) - 2):
+                spur_node = A[k-1][i]
+                root_path = A[k-1][:i]
 
-            # Keep track of removed edges to restore them later
-            edges_removed = []
+                for path in A:
+                    if root_path == path[:i]:
+                        G[path[i]][path[i + 1]][0]['ignored'] = True
+                
+                for node in root_path:
+                    if node != spur_node:
+                        G.nodes[node]['ignored'] = True
+                
+                spur_path = dijkstra(G, spur_node, target)[0][0]
+                if not spur_path or spur_path[-1] != target or spur_path[0] != source:
+                    return None
 
-            # Remove the edges involved in the shortest paths found so far
-            for path in A:
-                if len(path) > i and root_path == path[:i + 1]:
-                    u, v = path[i], path[i + 1]
-                    edge_keys = list(G[u][v].keys())  # Make a separate list of edge keys
-                    for key in edge_keys:
-                        edge_data = G[u][v][key]
-                        G.remove_edge(u, v, key)
-                        edges_removed.append((u, v, key, edge_data))
+                total_path = root_path + spur_path
 
-            spur_path = None
-            try:
-                # Compute a spur path from the spur node to the target
-                spur_path = nx.shortest_path(G, spur_node, target, weight='length')
-            except nx.NetworkXNoPath:
-                pass
+                if total_path not in B:
+                    B.append(total_path)
+                
+                for node in root_path:
+                    G.nodes[node]['ignored'] = False
 
-            # Total path is the concatenation of root path and spur path
-            if spur_path is not None:
-                total_path = root_path[:-1] + spur_path
-                B.append(total_path)
+                for path in A:
+                    if root_path == path[:i]:
+                        G[path[i]][path[i + 1]][0]['ignored'] = False
+                
+            if not B:
+                break
 
-            # Restore the edges that were removed
-            for u, v, key, data in edges_removed:
-                G.add_edge(u, v, key=key, **data)
+            B.sort(key=lambda x: analyze_path(G, x)[0])
+            A.append(B[0])
+            B.pop(0)
 
-        if not B:
-            break  # If no spur paths are found, stop searching
+    except:
+        return None
 
-        # Sort the potential k-shortest paths by their lengths
-        B.sort(key=lambda path: sum(G[path[j]][path[j + 1]][0]['length'] for j in range(len(path) - 1)))
-        # Add the shortest path among B to the list of k-shortest paths
-        A.append(B[0])
-        # Remove the shortest path added to A from list B
-        B.pop(0)
+    if len(A) < K:
+        return None
 
     return A

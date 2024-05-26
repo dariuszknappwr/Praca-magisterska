@@ -1,8 +1,10 @@
 from bellman_ford import bellman_ford, initialize_bellman_ford_edge_usage
 import networkx as nx
 from networkx.algorithms.shortest_paths.weighted import single_source_dijkstra
+from profiler import profile
 
 
+@profile
 def johnson(G, weight='length'):
     dist = {v: 0 for v in G}
     pred = {v: [] for v in G}
@@ -14,7 +16,8 @@ def johnson(G, weight='length'):
         
     initialize_bellman_ford_edge_usage(G)
     # Zastosowanie algorytmu Bellmana-Forda do znalezienia najkrótszych ścieżek od 'q' do wszystkich innych wierzchołków
-    h, _ = bellman_ford(G, 'q')
+    function_output, _, _= bellman_ford(G, 'q')
+    h, _ = function_output
 
     # Usunięcie dodanego wierzchołka 'q'
     G.remove_node('q')
