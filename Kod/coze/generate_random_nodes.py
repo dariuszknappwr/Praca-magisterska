@@ -28,12 +28,6 @@ def get_start_end_nodes(test_number, number_of_pairs):
         G = get_test_map(test_number)
         generate_start_end_nodes(G, test_number, number_of_pairs)
         
-    #if number of lines in file is different than number of pairs, then generate it
-    with open(f'{test_number}/{test_number}_start_end_nodes.txt', 'r') as file:
-        lines = file.readlines()
-        if len(lines) != number_of_pairs:
-            G = get_test_map(test_number)
-            generate_start_end_nodes(G, test_number, number_of_pairs)
     with open(f'{test_number}/{test_number}_start_end_nodes.txt', 'r') as file:
         lines = file.readlines()
         for line in lines:

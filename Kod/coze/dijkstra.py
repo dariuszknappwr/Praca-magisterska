@@ -6,8 +6,6 @@ from profiler import profile
 def dijkstra(G, orig, dest, style='length', plot=False):
 
     for node in G.nodes:
-        if G.nodes[node]["ignored"]:
-            continue
         G.nodes[node]["visited"] = False
         G.nodes[node]["distance"] = float("inf")
         G.nodes[node]["previous"] = None
@@ -22,12 +20,8 @@ def dijkstra(G, orig, dest, style='length', plot=False):
         _, node = heapq.heappop(pq)
         if node == dest:
             break
-        if G.nodes[node]["visited"] or G.nodes[node]["ignored"]:
-            continue
         G.nodes[node]["visited"] = True
         for edge in G.out_edges(node):
-            if G.edges[edge[0], edge[1], 0]['ignored']:
-                continue
             neighbor = edge[1]
             if style == 'length':
                 weight = G.edges[(edge[0], edge[1], 0)]["length"]
@@ -39,6 +33,9 @@ def dijkstra(G, orig, dest, style='length', plot=False):
                 G.nodes[neighbor]["previous"] = node
                 heapq.heappush(pq, (G.nodes[neighbor]["distance"], neighbor))
         step += 1
+
+    if G.nodes[dest]["previous"] is None:
+        return None, step
 
     path = deque()
     current_node = dest

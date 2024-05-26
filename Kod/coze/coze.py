@@ -29,7 +29,7 @@ from tests_one_one_k import tests_one_one_k
 
 
 def main():
-    test_number = 'Test15'
+    test_number = 'Test11'
     number_of_pairs = 100
     G = get_test_map(test_number)
 
@@ -48,15 +48,17 @@ def main():
     
     start_nodes, end_nodes = get_start_end_nodes(test_number, number_of_pairs)
     for i in range(number_of_pairs):
+        start = start_nodes[i]
+        end = end_nodes[i]
         result = {}
         if test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
-            result = tests_one_one(G, start_nodes, end_nodes)
+            result = tests_one_one(G, start, end)
         elif test_number in ['Test6', 'Test7', 'Test8', 'Test9', 'Test10']:
-            result = tests_one_many(G, start_nodes, end_nodes, plot=False)
+            result = tests_one_many(G, start, end, plot=False)
         elif test_number in ['Test11', 'Test12', 'Test13', 'Test14']:
             result = tests_many_many(G, plot=False)
         elif test_number in ['Test15', 'Test16', 'Test17', 'Test18', 'Test19']:
-            result = tests_one_one_k(G, start_nodes, end_nodes)
+            result = tests_one_one_k(G, start, end)
 
         collection.insert_one(result)
 
