@@ -29,45 +29,35 @@ from tests_one_one_k import tests_one_one_k
 
 
 def main():
-    test_number = 'Test11'
-    number_of_pairs = 100
-    G = get_test_map(test_number)
-
-    G = set_speed_weigths(G)
-    print("Ustawiono wagi grafu")
-
-    # Create a client connection to your MongoDB server
     client = MongoClient('mongodb://localhost:27017/')
-
-    # Connect to your database
     db = client['PracaMagisterska']
 
-    collection = db[test_number]
+    for test_number in ['Test5', 'Test8', 'Test9', 'Test10', 'Test11', 'Test12', 'Test13', 'Test14', 'Test15', 'Test16', 'Test17', 'Test18', 'Test19']:
+        #test_number = 'Test11'
+        number_of_pairs = 100
+        G = get_test_map(test_number)
+        G = set_speed_weigths(G)
+        print("Ustawiono wagi grafu")
 
-    #print(ox.basic_stats(G))
-    
-    start_nodes, end_nodes = get_start_end_nodes(test_number, number_of_pairs)
-    for i in range(number_of_pairs):
-        start = start_nodes[i]
-        end = end_nodes[i]
-        result = {}
-        if test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
-            result = tests_one_one(G, start, end)
-        elif test_number in ['Test6', 'Test7', 'Test8', 'Test9', 'Test10']:
-            result = tests_one_many(G, start, end, plot=False)
-        elif test_number in ['Test11', 'Test12', 'Test13', 'Test14']:
-            result = tests_many_many(G, plot=False)
-        elif test_number in ['Test15', 'Test16', 'Test17', 'Test18', 'Test19']:
-            result = tests_one_one_k(G, start, end)
+        collection = db[test_number]
 
-        collection.insert_one(result)
-
+        #print(ox.basic_stats(G)) 
         
+        start_nodes, end_nodes = get_start_end_nodes(test_number, number_of_pairs)
+        for i in range(number_of_pairs):
+            start = start_nodes[i]
+            end = end_nodes[i]
+            result = {}
+            if test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
+                result = tests_one_one(G, start, end)
+            elif test_number in ['Test6', 'Test7', 'Test8', 'Test9', 'Test10']:
+                result = tests_one_many(G, start, end, plot=False)
+            elif test_number in ['Test11', 'Test12', 'Test13', 'Test14']:
+                result = tests_many_many(G, plot=False)
+            elif test_number in ['Test15', 'Test16', 'Test17', 'Test18', 'Test19']:
+                result = tests_one_one_k(G, start, end)
 
-        
-
-
-
+            collection.insert_one(result)
 
 if __name__ == '__main__':
     main()

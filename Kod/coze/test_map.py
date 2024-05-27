@@ -19,7 +19,7 @@ def get_test_map(test_number):
         'Test5': 'Maps/Nowy_York_map.graphml',
         'Test6': 'Maps/Zalipie_map.graphml',
         'Test7': 'Maps/Wroclaw_map.graphml',
-        'Test8': 'Maps/Belrin_map.graphml',
+        'Test8': 'Maps/Berlin_map.graphml',
         'Test9': 'Maps/Lubelskie_map.graphml',
         'Test10': 'Maps/Nowy_York_map.graphml',
         'Test11': 'Maps/Zalipie_map.graphml',
