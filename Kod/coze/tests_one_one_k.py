@@ -1,5 +1,6 @@
 from k_shortest_paths import k_shortest_paths
 from dijkstra_k_shortest_paths import dijkstra_k_shortest_paths
+from hoffman_pavley import hoffman_pavley
 from graph_utils import analyze_path
 from plot_graph import plot_graph
 import osmnx as ox
@@ -42,31 +43,56 @@ def tests_one_one_k(G, start, end, plot=False):
             results[f"Yen's CPU - K={K}"] = consumed_cpu
 
         start_time = time.time()
-        double_sweep_paths, consumed_memory, consumed_cpu = dijkstra_k_shortest_paths(G, start, end, K)
+        dijkstra_paths, consumed_memory, consumed_cpu = dijkstra_k_shortest_paths(G, start, end, K)
         end_time = time.time()
-        yen_time = end_time - start_time
-        if double_sweep_paths:
-            double_sweep_results = []
+        dijkstra_time = end_time - start_time
+        if dijkstra_paths:
+            dijkstra_results = []
             i = 1
-            for path in double_sweep_paths:
-                double_sweep_result = analyze_path(G, path)
-                double_sweep_results.append({
+            for path in dijkstra_paths:
+                dijkstra_result = analyze_path(G, path)
+                dijkstra_results.append({
                     "Path Number": i,
-                    "Travel Time": double_sweep_result[0],
-                    "Path Length": double_sweep_result[1],
-                    "Default Speed Distance": double_sweep_result[2],
-                    "Average Speed": double_sweep_result[3],
+                    "Travel Time": dijkstra_result[0],
+                    "Path Length": dijkstra_result[1],
+                    "Default Speed Distance": dijkstra_result[2],
+                    "Average Speed": dijkstra_result[3],
                     "Path": path
                 })
                 if plot:
                     plot_graph(G, path, f'Dijkstra Route - K={K}')
                 i += 1
 
-            results[f"Dijkstra Algorithm - K={K}"] = double_sweep_results
-            results[f"Dijkstra time - K={K}"] = yen_time
+            results[f"Dijkstra Algorithm - K={K}"] = dijkstra_results
+            results[f"Dijkstra time - K={K}"] = dijkstra_time
             results[f"Dijkstra memory - K={K}"] = consumed_memory
             results[f"Dijkstra CPU - K={K}"] = consumed_cpu
+        ##############
+        start_time = time.time()
+        hoffman_pavley_paths, consumed_memory, consumed_cpu = hoffman_pavley(G, start, end, K)
+        end_time = time.time()
 
+        hoffman_pavley_time = end_time - start_time
+        if hoffman_pavley_paths:
+            hoffman_pavley_results = []
+            i = 1
+            for path in hoffman_pavley_paths:
+                hoffman_pavley_result = analyze_path(G, path)
+                hoffman_pavley_results.append({
+                    "Path Number": i,
+                    "Travel Time": hoffman_pavley_result[0],
+                    "Path Length": hoffman_pavley_result[1],
+                    "Default Speed Distance": hoffman_pavley_result[2],
+                    "Average Speed": hoffman_pavley_result[3],
+                    "Path": path
+                })
+                if plot:
+                    plot_graph(G, path, f'Hoffman-Pavley Route - K={K}')
+                i += 1
 
+            results[f"Hoffman-Pavley Algorithm - K={K}"] = hoffman_pavley_results
+            results[f"Hoffman-Pavley time - K={K}"] = hoffman_pavley_time
+            results[f"Hoffman-Pavley memory - K={K}"] = consumed_memory
+            results[f"Hoffman-Pavley CPU - K={K}"] = consumed_cpu
         
     return results

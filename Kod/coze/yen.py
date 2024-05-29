@@ -45,7 +45,7 @@ def yen_ksp(G, source, target, K=1):
 
     return A
 
-def yen_ksp(G, source, target, weight=None):
+def yen_ksp(G, source, target):
     if source not in G:
         raise nx.NodeNotFound(f"source node {source} not in graph")
 
@@ -57,7 +57,7 @@ def yen_ksp(G, source, target, weight=None):
     prev_path = None
     while True:
         if not prev_path:
-            path = dijkstra(G, source, target, weight=weight)[0][0]
+            path = dijkstra(G, source, target)[0][0]
             _,length,_,_ = analyze_path(G, path)
             listB.push(length, path)
         else:

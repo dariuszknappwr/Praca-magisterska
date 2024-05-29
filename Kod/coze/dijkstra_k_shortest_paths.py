@@ -7,12 +7,12 @@ def dijkstra_k_shortest_paths(Graph, start, end, K):
     G = Graph.copy()
     paths = []
     for _ in range(K):
-        # Run Dijkstra's algorithm to find the shortest path
-        path = dijkstra(G, start, end)[0][0]
+        dijkstra_output = dijkstra(G, start, end)
+        path = dijkstra_output[0][0]
         if not path or path[-1] != end or path[0] != start:
             break
         paths.append(path)
-        # Remove the edges of the shortest path
+        # Usuwanie z grafu krawędzi ze znalezionego rozwiązania
         for i in range(len(path) - 1):
             G.remove_edge(path[i], path[i+1])
     if(len(paths) < K):

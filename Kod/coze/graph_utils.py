@@ -67,7 +67,7 @@ def initialize_edge_usage(G):
     #Initialize or reset 'algorithm_uses' attribute for all edges to 0.
     nx.set_edge_attributes(G, 0, 'algorithm_uses')
 
-def update_edge_usage(G, pred):
+def update_edge_usage(G, pred, G_all_uses=None):
     # Reset 'algorithm_uses' to 0 for all edges
     initialize_edge_usage(G)
     
@@ -82,16 +82,47 @@ def update_edge_usage(G, pred):
                     # Increment 'algorithm_uses' by accessing the edge data directly
                     # This works for both MultiGraphs and Graphs
                     if G.is_multigraph(): 
+                        if isinstance(prev, list):
+                            prev = tuple(prev)
+                        if isinstance(target, list):
+                            target = tuple(target)
                         # For MultiGraphs, increment all edges between prev and target
-                        for key in G[prev][target]:
-                            if 'algorithm_uses' in G[prev][target][key]:
-                                G[prev][target][key]['algorithm_uses'] += 1
-                            else:
-                                G[prev][target][key]['algorithm_uses'] = 1
+                        if prev in G and target in G[prev]:
+                            for key in G[prev][target]:
+                                if 'algorithm_uses' in G[prev][target][key]:
+                                    G[prev][target][key]['algorithm_uses'] += 1
+                                    #G_all_uses[prev][target][key]['algorithm_uses'] += 1
+                                else:
+                                    print(f"Error: 'algorithm_uses' not set for edge ({prev}, {target})")
                     else:
                         # For simple Graphs
                         if 'algorithm_uses' in G[prev][target]:
                             G[prev][target]['algorithm_uses'] += 1
+                            #G_all_uses[prev][target]['algorithm_uses'] += 1
                         else:
-                            G[prev][target]['algorithm_uses'] = 1
+                            print(f"Error: 'algorithm_uses' not set for edge ({prev}, {target})")
                 target = prev
+def update_edge_usage_johnson(G, sources_targets_map):
+    #print(f"Dist map: {dist_map}")
+    # Reset 'algorithm_uses' to 0 for all edges
+    initialize_edge_usage(G)
+    
+    # Iterate over all pairs of source and target nodes
+    for sources in sources_targets_map:
+        # funkcja zwraca również wierzchołki None - None, które należy pominąć
+        if sources == None:
+            continue
+        for source, paths in sources.items():
+            prev_path_node = None
+            for target_path in paths.items():
+                target = target_path[0]
+                path = target_path[1]
+                for v in path:
+                    if v == source:
+                        prev_path_node = path[0]
+                        continue
+                    if 'algorithm_uses' in G[prev_path_node][v][0]:
+                        G[prev_path_node][v][0]['algorithm_uses'] = G[prev_path_node][v][0]['algorithm_uses'] + 1
+                    else:
+                        print(f"Error: 'algorithm_uses' not set for edge ({prev_path_node}, {v})")
+                    prev_path_node = v

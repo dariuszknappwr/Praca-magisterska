@@ -3,7 +3,7 @@ import heapq
 from profiler import profile
 
 @profile
-def dijkstra(G, orig, dest, style='length', plot=False):
+def dijkstra(G, orig, dest, weightLabel='length', plot=False):
 
     for node in G.nodes:
         G.nodes[node]["visited"] = False
@@ -23,10 +23,7 @@ def dijkstra(G, orig, dest, style='length', plot=False):
         G.nodes[node]["visited"] = True
         for edge in G.out_edges(node):
             neighbor = edge[1]
-            if style == 'length':
-                weight = G.edges[(edge[0], edge[1], 0)]["length"]
-            else:
-                weight = G.edges[(edge[0], edge[1], 0)]["weight"]
+            weight = G.edges[(edge[0], edge[1], 0)][weightLabel]
 
             if G.nodes[neighbor]["distance"] > G.nodes[node]["distance"] + weight:
                 G.nodes[neighbor]["distance"] = G.nodes[node]["distance"] + weight

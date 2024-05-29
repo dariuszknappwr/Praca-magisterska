@@ -1,4 +1,5 @@
 from dijkstra import dijkstra
+from dijkstra_fibonacci import dijkstra_fibonacci
 from a_star import a_star, euclidean_heuristic, manhattan_heuristic, chebyshev_heuristic, haversine
 from graph_utils import analyze_path
 import time
@@ -7,7 +8,9 @@ import time
 def tests_one_one(G, start, end):
     algorithms = {
     "Dijkstra's": lambda G, start, end: dijkstra(G, start, end),
-    "Dijkstra's Max Speed": lambda G, start, end: dijkstra(G, start, end, style='maxspeed'),
+    "Dijkstra's Max Speed": lambda G, start, end: dijkstra(G, start, end, weightLabel='weight'),
+    "Dijkstra's Fibonacci": lambda G, start, end: dijkstra_fibonacci(G, start, end),
+    "Dijkstra's Fibonacci Max Speed": lambda G, start, end: dijkstra_fibonacci(G, start, end, weightLabel='weight'),
     "A Star Euclidean": lambda G, start, end: a_star(G, start, end, euclidean_heuristic),
     "A Star Manhattan": lambda G, start, end: a_star(G, start, end, manhattan_heuristic),
     "A Star Chebyshev": lambda G, start, end: a_star(G, start, end, chebyshev_heuristic),

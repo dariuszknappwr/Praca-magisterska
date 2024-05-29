@@ -41,7 +41,7 @@ def style_path_edge(G, edge):
     return G
 
 
-def plot_heatmap(G, algorithm_attr):
+def plot_heatmap(G, algorithm_attr, show=False):
     # Get attribute values
     edge_attributes = list(nx.get_edge_attributes(G, algorithm_attr).values())
     
@@ -72,4 +72,5 @@ def plot_heatmap(G, algorithm_attr):
     sm.set_array([])
     cbar = plt.colorbar(sm, ax=ax, orientation='vertical', fraction=0.02, pad=0.02)
     cbar.set_label(algorithm_attr)
-    plt.show()
+    if show:
+        plt.show()

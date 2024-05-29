@@ -3,7 +3,7 @@ import os
 import time
 import gc
 
-ENABLE_PROFILING = True
+ENABLE_PROFILING = False
 
 # inner psutil function
 def process_memory():

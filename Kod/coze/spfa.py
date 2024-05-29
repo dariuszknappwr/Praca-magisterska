@@ -3,7 +3,6 @@ from collections import deque
 from profiler import profile
 
 def initialize_spfa_edge_usage(G):
-    #Initialize or reset 'algorithm_uses' attribute for all edges to 0.
     nx.set_edge_attributes(G, 0, 'spfa_algorithm_uses')
 
 @profile
@@ -18,9 +17,9 @@ def spfa(G, start):
         u = queue.popleft()
         in_queue[u] = False
         
-        # Loop through each edge that comes out of `u`
+        # Pętla przechodząca przez wszystkie krawędzie wierzchołka "u"
         for v, adj_data in G.adj[u].items():
-            for key, data in adj_data.items():  # Here we include the key in the iteration
+            for key, data in adj_data.items():
                 weight = data['length']
                 if distances[u] + weight < distances[v]:
                     distances[v] = distances[u] + weight

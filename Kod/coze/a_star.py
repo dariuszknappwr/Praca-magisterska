@@ -4,8 +4,8 @@ from plot_graph import plot_graph, style_unvisited_edge, style_visited_edge, sty
 import math
 from profiler import profile
 
-# A* finds a path from start to goal.
-# h is the heuristic function. h(n) estimates the cost to reach goal from node n.
+# A* znajduje ścieżkę od punktu startowego do celu.
+# h to funkcja heurystyczna. h(n) szacuje koszt dotarcia do celu z węzła n.
 @profile
 def a_star(G, orig, dest, heuristic, style='length', plot=False):
     for node in G.nodes:
@@ -26,7 +26,7 @@ def a_star(G, orig, dest, heuristic, style='length', plot=False):
         _, node = heapq.heappop(pq)
         if node == dest:
             if plot:
-                print("Iterations:", step)
+                print("Iteracje:", step)
                 plot_graph()
             break
         for edge in G.out_edges(node):
@@ -49,7 +49,7 @@ def a_star(G, orig, dest, heuristic, style='length', plot=False):
         path.appendleft(dest)
         dest = G.nodes[dest]['previous']
 
-    #print("Number of iterations A*:", iteration_count)
+    #print("Liczba iteracji A*:", iteration_count)
 
     return list(path), step
 
@@ -66,15 +66,15 @@ def chebyshev_heuristic(coord1, coord2):
     return max(abs(x1 - x2), abs(y1 - y2))
 
 def haversine(coord1, coord2):
-    # Converts latitude and longitude to
-    # spherical coordinates in radians.
+    # Konwertuje szerokość i długość geograficzną na
+    # współrzędne sferyczne w radianach.
     lat1, lon1 = map(math.radians, coord1)
     lat2, lon2 = map(math.radians, coord2)
 
-    # Haversine formula
+    # Wzór Haversine
     dlat = lat2 - lat1
     dlon = lon2 - lon1
     a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
     c = 2 * math.asin(math.sqrt(a))
-    r = 6371  # Radius of Earth in kilometers
+    r = 6371  # Promień Ziemi w kilometrach
     return c * r

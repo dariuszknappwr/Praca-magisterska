@@ -1,38 +1,43 @@
-\documentclass[tikz,border=10pt]{standalone}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta}
-
+\documentclass{article}
+\usepackage{listings}             % Include the listings-package
 \begin{document}
-\begin{tikzpicture}
-\begin{scope}[every node/.style={circle,thick,draw}]
-    \node[draw=black] (1) at (0,0) {1};
-    %\node[rectangle,draw=gray] (1cost) at (-0.5,0.5) {$0$};
-    \node[draw=black] (2) at (0,3) {2};
-    %\node[rectangle,draw=gray] (2cost) at (-0.6,3) {$3$};
-    \node[draw=black] (3) at (2.5,4) {3};
-    %\node[rectangle,draw=gray] (3cost) at (1.9,4.3) {$6$};
-    \node[draw=black] (4) at (2.5,1) {4};
-    %\node[rectangle,draw=gray] (4cost) at (1.9,1.3) {$4$};
-    \node[draw=black] (5) at (2.5,-3) {5};
-    %\node[rectangle,draw=gray] (5cost) at (3.0,-2.5) {$5$};
-    \node[draw=black] (6) at (5,3) {6} ;
-    %\node[rectangle,draw=gray] (6cost) at (5.5,3.5) {$7$};
-\end{scope}
+\lstset{language=Pascal}          % Set your language (you can change the language for each code-block optionally)
 
-\begin{scope}[>={Stealth[black]},
-              every node/.style={fill=white,circle},
-              every edge/.style={draw=black,very thick}]
-    \path [-] (1) edge[draw=black] node {$3$} (2);
-    \path [-] (2) edge[draw=black] node {$3$} (3);
-    \path [-] (1) edge[draw=black] node {$4$} (4);
-    \path [-] (4) edge[draw=black] node {$3$} (3);
-    \path [-] (1) edge[draw=black] node {$5$} (5);
-    \path [-] (4) edge[draw=black] node {$3$} (5);
-    \path [-] (4) edge[draw=black] node {$5$} (6);
-    \path [-] (3) edge[draw=black] node {$5$} (6);
-    \path [-] (5) edge[draw=red] node {$2$} (6); 
-    \path [-] (2) edge[bend right=60, draw=black] node {$8$} (5); 
-    \path [-] (5) edge[draw=red, out=180, in=-90, loop] node {$1$} (); 
-\end{scope}
-\end{tikzpicture}
+\begin{lstlisting}
+    import networkx as nx
+from collections import deque
+from profiler import profile
+
+def initialize_spfa_edge_usage(G):
+    nx.set_edge_attributes(G, 0, 'spfa_algorithm_uses')
+
+@profile
+def spfa(G, start):
+    distances = {node: float('infinity') for node in G.nodes()}
+    distances[start] = 0
+    queue = deque([start])
+    in_queue = {node: False for node in G.nodes()}
+    in_queue[start] = True
+
+    while queue:
+        u = queue.popleft()
+        in_queue[u] = False
+        
+        # Pętla przechodząca przez wszystkie krawędzie wierzchołka "u"
+        for v, adj_data in G.adj[u].items():
+            for key, data in adj_data.items():
+                weight = data['length']
+                if distances[u] + weight < distances[v]:
+                    distances[v] = distances[u] + weight
+                    G.edges[u, v, key]['spfa_algorithm_uses'] += 1
+                    if not in_queue[v]:
+                        queue.append(v)
+                        in_queue[v] = True
+
+    return distances
+    
+    
+    
+\end{lstlisting}
+
 \end{document}

@@ -31,8 +31,8 @@ from tests_one_one_k import tests_one_one_k
 def main():
     client = MongoClient('mongodb://localhost:27017/')
     db = client['PracaMagisterska']
-
-    for test_number in ['Test5', 'Test8', 'Test9', 'Test10', 'Test11', 'Test12', 'Test13', 'Test14', 'Test15', 'Test16', 'Test17', 'Test18', 'Test19']:
+    G_many_many_all_algorithm_uses = None
+    for test_number in ['Test20']:
         #test_number = 'Test11'
         number_of_pairs = 100
         G = get_test_map(test_number)
@@ -52,9 +52,9 @@ def main():
                 result = tests_one_one(G, start, end)
             elif test_number in ['Test6', 'Test7', 'Test8', 'Test9', 'Test10']:
                 result = tests_one_many(G, start, end, plot=False)
-            elif test_number in ['Test11', 'Test12', 'Test13', 'Test14']:
-                result = tests_many_many(G, plot=False)
-            elif test_number in ['Test15', 'Test16', 'Test17', 'Test18', 'Test19']:
+            elif test_number in ['Test11', 'Test12', 'Test13', 'Test14', 'Test15', 'Test16', 'Test17']:
+                result = tests_many_many(G, test_number, i, plot=True)
+            elif test_number in ['Test18', 'Test19', 'Test20', 'Test21', 'Test22', 'Test23']:
                 result = tests_one_one_k(G, start, end)
 
             collection.insert_one(result)
