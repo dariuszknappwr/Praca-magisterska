@@ -16,6 +16,7 @@ def tests_one_one_k(G, start, end, plot=False):
         start_time = time.time()
         ksp_paths, consumed_memory, consumed_cpu = k_shortest_paths(G, start, end, K, weight='length')
         end_time = time.time()
+        print(f"KSP: {end_time - start_time}")
         yen_time = end_time - start_time
         if ksp_paths is not None:
             ksp_results = []
@@ -46,6 +47,7 @@ def tests_one_one_k(G, start, end, plot=False):
         dijkstra_paths, consumed_memory, consumed_cpu = dijkstra_k_shortest_paths(G, start, end, K)
         end_time = time.time()
         dijkstra_time = end_time - start_time
+        print(f"Dijkstra: {end_time - start_time}")
         if dijkstra_paths:
             dijkstra_results = []
             i = 1
@@ -71,8 +73,8 @@ def tests_one_one_k(G, start, end, plot=False):
         start_time = time.time()
         hoffman_pavley_paths, consumed_memory, consumed_cpu = hoffman_pavley(G, start, end, K)
         end_time = time.time()
-
         hoffman_pavley_time = end_time - start_time
+        print(f"Hoffman-Pavley: {end_time - start_time}")
         if hoffman_pavley_paths:
             hoffman_pavley_results = []
             i = 1

@@ -1,5 +1,5 @@
 from collections import deque
-from heapdict import heapdict
+from fibheap import makefheap, fheappush, fheappop
 from profiler import profile
 
 @profile
@@ -14,11 +14,11 @@ def dijkstra_fibonacci(G, orig, dest, weightLabel='length', plot=False):
     G.nodes[orig]["distance"] = 0
     G.nodes[orig]["size"] = 50
     G.nodes[dest]["size"] = 50
-    pq = heapdict()
-    pq[orig] = 0
+    pq = makefheap()
+    fheappush(pq, (0, orig))
     step = 0
     while pq:
-        node = pq.popitem()[0]
+        node = fheappop(pq)[1]
         if node == dest:
             break
         G.nodes[node]["visited"] = True
@@ -29,7 +29,7 @@ def dijkstra_fibonacci(G, orig, dest, weightLabel='length', plot=False):
             if G.nodes[neighbor]["distance"] > G.nodes[node]["distance"] + weight:
                 G.nodes[neighbor]["distance"] = G.nodes[node]["distance"] + weight
                 G.nodes[neighbor]["previous"] = node
-                pq[neighbor] = G.nodes[neighbor]["distance"]
+                fheappush(pq, (G.nodes[neighbor]["distance"], neighbor))
         step += 1
 
     if G.nodes[dest]["previous"] is None:

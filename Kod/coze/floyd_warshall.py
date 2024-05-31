@@ -1,6 +1,5 @@
 from profiler import profile
 
-
 @profile
 def floyd_warshall(G):
     # Initialize the distance and path matrices

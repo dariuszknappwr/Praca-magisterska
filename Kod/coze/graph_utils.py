@@ -67,16 +67,22 @@ def initialize_edge_usage(G):
     #Initialize or reset 'algorithm_uses' attribute for all edges to 0.
     nx.set_edge_attributes(G, 0, 'algorithm_uses')
 
-def update_edge_usage(G, pred, G_all_uses=None):
+def update_edge_usage(G, pred):
     # Reset 'algorithm_uses' to 0 for all edges
     initialize_edge_usage(G)
     
     # Iterate over all pairs of source and target nodes
     for source in G.nodes:
         for target in G.nodes:
+            visited = set()
             # Traverse the shortest path from target to source
             while target in pred[source] and pred[source][target] is not None:
                 prev = pred[source][target]
+                if target in visited:
+                    break
+                visited.add(target)
+                prev = pred[source][target]
+
                 
                 if prev is not None:
                     # Increment 'algorithm_uses' by accessing the edge data directly

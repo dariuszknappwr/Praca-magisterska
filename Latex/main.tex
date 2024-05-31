@@ -4,37 +4,25 @@
 \lstset{language=Pascal}          % Set your language (you can change the language for each code-block optionally)
 
 \begin{lstlisting}
-    import networkx as nx
-from collections import deque
-from profiler import profile
-
-def initialize_spfa_edge_usage(G):
-    nx.set_edge_attributes(G, 0, 'spfa_algorithm_uses')
-
-@profile
-def spfa(G, start):
-    distances = {node: float('infinity') for node in G.nodes()}
-    distances[start] = 0
-    queue = deque([start])
-    in_queue = {node: False for node in G.nodes()}
-    in_queue[start] = True
-
-    while queue:
-        u = queue.popleft()
-        in_queue[u] = False
-        
-        # Pętla przechodząca przez wszystkie krawędzie wierzchołka "u"
-        for v, adj_data in G.adj[u].items():
-            for key, data in adj_data.items():
-                weight = data['length']
-                if distances[u] + weight < distances[v]:
-                    distances[v] = distances[u] + weight
-                    G.edges[u, v, key]['spfa_algorithm_uses'] += 1
-                    if not in_queue[v]:
-                        queue.append(v)
-                        in_queue[v] = True
-
-    return distances
+    1 	from heapq import heappop, heappush
+    2 	from profiler import profile
+    3 	
+    4 	@profile
+    5 	def hoffman_pavley(G, source, target, k, weightLabel='length'):
+    6 	    k_shortest_paths = []
+    7 	    paths = [(0, [source])]
+    8 	    while paths and len(k_shortest_paths) < k:
+    9 	        cost, path = heappop(paths)
+    10 	        node = path[-1]
+    11 	        if node == target:
+    12 	            k_shortest_paths.append((cost, path))
+    13 	        else:
+    14 	            for neighbor in G.neighbors(node):
+    15 	                if neighbor not in path:
+    16 	                    new_cost = cost + G[node][neighbor][0][weightLabel]
+    17 	                    new_path = path + [neighbor]
+    18 	                    heappush(paths, (new_cost, new_path))
+    19 	    return k_shortest_paths
     
     
     

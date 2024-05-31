@@ -1,17 +1,15 @@
 # Fdb version 4
-["pdflatex"] 1716930587.43583 "c:/Users/darek/Desktop/Studia/Praca magisterska/Latex/main.tex" "main.pdf" "main" 1716930588.50461 2
+["pdflatex"] 1717104507.39148 "c:/Users/darek/Desktop/Studia/Praca magisterska/Latex/main.tex" "main.pdf" "main" 1717104508.13199 0
   "C:/Users/darek/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1713613623 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
+  "C:/Users/darek/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1000.pk" 1716832361 11548 7a5950b9954619d7e32da71b12f9a6ab ""
   "C:/Users/darek/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1713528645 24236006 654f2c57e4102011848be5507f2aed07 ""
+  "C:/Users/darek/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/tcrm1000.tfm" 993062508 1436 c7f957a372ef2fbe93c0982f96625e12 ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmbx10.tfm" 1136765053 1328 c834bbb027764024c09d3d2bf908b5f0 ""
-  "C:/Users/darek/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmti10.tfm" 1136765053 1480 aa8e34af0eb6a2941b776984cf1dfdc4 ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1247596666 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1247596667 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1247596667 35752 024fb6c41858982481f6968b5fc26508 ""
-  "C:/Users/darek/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1247596667 32569 5e5ddc8df908dea60932f3c484a54c0d ""
-  "C:/Users/darek/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb" 1247596667 37944 359e864bd06cde3b1cf57bb20757fb06 ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/base/article.cls" 1705273579 20144 147463a6a579f4597269ef9565205cfe ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/base/omlcmr.fd" 1705273579 2470 ec0f30a4dee212b06d8724b94d7d4f9a ""
-  "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/base/omscmr.fd" 1705273579 2469 74341109f164f230581718c66211c718 ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/base/size10.clo" 1705273578 8448 dbc0dbf4156c0bb9ba01a1c685d3bad0 ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/graphics/keyval.sty" 1665067579 2671 7e67d78d9b88c845599a85b2d41f2e39 ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/l3backend/l3backend-pdftex.def" 1710412547 29918 d08e4795c0778dfb000e82d9225c6ce2 ""
@@ -20,9 +18,9 @@
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/listings/lstlang1.sty" 1710669304 205152 3812b81ccaa2f3b7199572b45e41280a ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/listings/lstmisc.sty" 1710669304 77023 48b5adf5086dac991587916788887607 ""
   "C:/Users/darek/AppData/Local/Programs/MiKTeX/tex/latex/listings/lstpatch.sty" 1710669304 353 9024412f43e92cd5b21fe9ded82d0610 ""
-  "c:/Users/darek/Desktop/Studia/Praca magisterska/Latex/main.tex" 1716930584 1347 805d79a71cd515ae3bc8e820d75e56d0 ""
-  "main.aux" 1716930588 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
-  "main.tex" 1716930584 1347 805d79a71cd515ae3bc8e820d75e56d0 ""
+  "c:/Users/darek/Desktop/Studia/Praca magisterska/Latex/main.tex" 1717104506 1147 d2086c2bea83b7644e2eb70d8b6186d4 ""
+  "main.aux" 1717104507 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "main.tex" 1717104506 1147 d2086c2bea83b7644e2eb70d8b6186d4 ""
   (generated)
   "main.aux"
   "main.log"

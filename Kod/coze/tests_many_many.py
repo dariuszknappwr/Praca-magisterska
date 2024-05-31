@@ -13,28 +13,28 @@ from hoffman_pavley import hoffman_pavley
 def tests_many_many(G, test_number, iteration_number, plot=False):
     # Ensure the Graph has a pos attribute for plotting
     G = ox.project_graph(G)
-    G_all_algorithm_uses = G.copy()
+    #G_all_algorithm_uses = G.copy()
 
-    floyd_warshall_sum = 0
-    johnsons_algorithm_sum = 0
-    hoffman_pavley_sum = 0
+    floyd_warshall_iterations = 0
+    johnson_iterations = 0
 
     # Initialize 'algorithm_uses' for all edges to 0
     initialize_edge_usage(G)
-    initialize_edge_usage(G_all_algorithm_uses)
+    #initialize_edge_usage(G_all_algorithm_uses)
     # Run Floyd-Warshall algorithm
     start_time = time.time()
     function_output, floyd_warshall_consumed_memory, floyd_warshall_consumed_cpu = floyd_warshall(G)
-    floyd_warshall_distances, floyd_warshall_predecessors = function_output
     end_time = time.time()
+    floyd_warshall_distances, floyd_warshall_predecessors = function_output
     floyd_warshall_algorithm_time = end_time - start_time
         
-    for u,v,data in G.edges(data=True):
-        floyd_warshall_sum += data['algorithm_uses']
+    
     
     # Update edge usage based on the Floyd-Warshall algorithm
     if floyd_warshall_distances and floyd_warshall_predecessors:
         update_edge_usage(G, floyd_warshall_predecessors)
+        for u,v,data in G.edges(data=True):
+            floyd_warshall_iterations += data['algorithm_uses']
         # Plot heatmap
         if plot:
             plot_heatmap(G, 'algorithm_uses')
@@ -47,17 +47,17 @@ def tests_many_many(G, test_number, iteration_number, plot=False):
 
     # Initialize 'length' for all edges to zero
     initialize_edge_usage(G)
-
     start_time = time.time()
     johnson_distances = johnson(G)
     end_time = time.time()
     johnsons_algorithm_time = end_time - start_time
 
-    for u,v,data in G.edges(data=True):
-        johnsons_algorithm_sum += data['algorithm_uses']
+
 
     if johnson_distances:
         update_edge_usage_johnson(G, johnson_distances)
+        for u,v,data in G.edges(data=True):
+            johnson_iterations += data['algorithm_uses']
         # Plot heatmap
         if plot:
             plot_heatmap(G, 'algorithm_uses')
@@ -69,12 +69,12 @@ def tests_many_many(G, test_number, iteration_number, plot=False):
 
     result = {
         "Floyd-Warshall Time": floyd_warshall_algorithm_time,
-        "Floyd-Warshall Iterations": floyd_warshall_sum,
+        "Floyd-Warshall Iterations": floyd_warshall_iterations,
         #"Floyd-Warshall Consumed Memory": floyd_warshall_consumed_memory,
         #"Floyd-Warshall Consumed CPU": floyd_warshall_consumed_cpu,
         #"Johnson's Algorithm Consumed Memory": johnson_consumed_memory,
         "Johnson's Time": johnsons_algorithm_time,
-        "Johnson's Iterations": johnsons_algorithm_sum,
+        "Johnson's Iterations": johnson_iterations,
         #"Johnson's Algorithm Consumed CPU": johnson_consumed_cpu
     }
 
