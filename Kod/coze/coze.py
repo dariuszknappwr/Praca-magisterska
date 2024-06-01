@@ -33,7 +33,7 @@ def main():
     client = MongoClient('mongodb://localhost:27017/')
     db = client['PracaMagisterska']
     G_many_many_all_algorithm_uses = None
-    for test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
+    for test_number in ['Test18']:
         number_of_pairs = 100
         G = get_test_map(test_number)
         G = set_speed_weigths(G)
@@ -51,7 +51,6 @@ def main():
             start = start_nodes[i]
             end = end_nodes[i]
             result = {}
-            print(dijkstra(G, start, end))
             if test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
                 result = tests_one_one(G, start, end)
             elif test_number in ['Test6', 'Test7', 'Test8', 'Test9', 'Test10']:

@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 from pymongo import MongoClient
 import statistics
+from collections import defaultdict
 import csv
 
 
@@ -8,7 +9,7 @@ client = MongoClient('mongodb://localhost:27017/')
 
 # Connect to your database
 db = client['PracaMagisterska']
-
+'''
 for test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
     collection = db[test_number]
 
@@ -204,3 +205,194 @@ for test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
                 else:
                     row.append('No data')
             writer.writerow(row)
+'''
+
+
+
+
+
+
+
+
+'''
+for test_number in ['Test6']:
+    collection = db[test_number]
+
+    results = list(collection.find())
+
+    algorithms = ['Bellman Ford', 'SPFA']
+
+    statistics_names = ["Time", "Distance Sum", "Average Distance", "Finite Length Paths Count", "Consumed Memory", "Consumed CPU"]
+
+    # Initialize a nested dictionary to store the times for each algorithm and each statistic
+    i = 0
+    times = {algorithm: {stat: [] for stat in statistics_names} for algorithm in algorithms}
+    for result in results:
+        i += 1
+        print(i)
+        for algorithm in algorithms:
+            for stat in statistics_names:
+                times[algorithm][stat].append(result[algorithm + ' ' + stat])
+
+
+
+    # Open the CSV file in write mode
+
+    with open(f'{test_number}/{test_number}_statistics.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Now you can calculate and write the statistics to the CSV file
+        for algorithm in algorithms:
+            for stat in statistics_names:
+                i = 0
+                time_list = times[algorithm][stat]
+                if time_list:
+                    if time_list[i] == None:
+                        continue
+                    average = round(sum(time_list) / len(time_list), 2)
+                    median = round(statistics.median(time_list), 2)
+                    std_dev = round(statistics.stdev(time_list), 2)
+                    variance = round(statistics.variance(time_list), 2)
+                    writer.writerow([algorithm, stat, average, median, std_dev, variance])
+                else:
+                    writer.writerow([algorithm, stat, 'No data', '', '', ''])
+                i += 1
+
+    # Open the CSV file in write mode
+    with open(f'{test_number}/{test_number}_statistics_table.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Write the header row
+        header = ['Mierzona wartość'] + algorithms
+        writer.writerow(header)
+
+        # Now you can calculate and write the statistics to the CSV file
+        for stat in statistics_names:
+            row = [stat]
+            i = 0
+            for algorithm in algorithms:
+                time_list = times[algorithm][stat]
+                if time_list:
+                    if time_list[i] == None:
+                        continue
+                    average = round(sum(time_list) / len(time_list), 2)
+                    std_dev = round(statistics.stdev(time_list), 2)
+                    row.append(f'{average} ± {std_dev}')
+                else:
+                    row.append('No data')
+                i += 1
+            writer.writerow(row)
+
+        # Open the CSV file in write mode
+    with open(f'{test_number}/{test_number}_statistics_table_mean.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Write the header row
+        header = ['Mierzona wartość'] + algorithms
+        writer.writerow(header)
+
+        # Now you can calculate and write the statistics to the CSV file
+        for stat in statistics_names:
+            row = [stat]
+            i = 0
+            for algorithm in algorithms:
+                time_list = times[algorithm][stat]
+                if time_list:
+                    if time_list[i] == None:
+                        continue
+                    average = round(sum(time_list) / len(time_list), 2)
+                    row.append(f'{average}')
+                else:
+                    row.append('No data')
+                i += 1
+            writer.writerow(row)
+
+    with open(f'{test_number}/{test_number}_statistics_all_values.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Write the header row
+        header = ['Mierzona wartość'] + ['Czas'] + ['Suma odległości'] + ['Średnia odległość'] + ['Ilość ścieżek skończonych'] + ['Zużyta pamięć'] + ['Zużyty CPU']
+        writer.writerow(header)
+
+        # Now you can calculate and write the statistics to the CSV file
+        for stat in statistics_names:
+            row = [stat]
+            for algorithm in ['Bellman Ford']:
+                for x in times[algorithm][stat]:
+                    row.append(x)
+                else:
+                    row.append('No data')
+            writer.writerow(row)
+'''
+for test_number in ['Test18']:
+    collection = db[test_number]
+
+    results = list(collection.find())
+
+    algorithms = ['Yen\'s', 'Hoffman-Pavley', 'Dijkstra']
+
+    statistics_names = []
+
+    # Open the CSV file in write mode
+    with open('statistics.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+
+        # Write the header row
+        writer.writerow(['Algorithm', 'K', 'Time', 'Memory', 'CPU'])
+
+        # Iterate over the results
+        for result in results:
+            for algorithm in algorithms:
+                for k in [1,2,3,4,5,10,25,50,100]:
+                    # Extract the statistics for this algorithm and K
+                    time = result.get(f"{algorithm} time - K={k}")
+                    memory = result.get(f"{algorithm} memory - K={k}")
+                    cpu = result.get(f"{algorithm} CPU - K={k}")
+
+                    # Write the statistics to the CSV file
+                    writer.writerow([algorithm, k, time, memory, cpu])
+    # Initialize dictionaries to store the total and count of each statistic
+totals = defaultdict(lambda: defaultdict(dict))
+counts = defaultdict(lambda: defaultdict(dict))
+
+# Iterate over the results
+for result in results:
+    for algorithm in algorithms:
+        for k in [1,2,3,4,5,10,25,50,100]:
+            # Extract the statistics for this algorithm and K
+            time = result.get(f"{algorithm} time - K={k}")
+            memory = result.get(f"{algorithm} memory - K={k}")
+            cpu = result.get(f"{algorithm} CPU - K={k}")
+            if result.get(f"{algorithm} Algorithm - K={k}") != None:
+                max_found_k = len(result.get(f"{algorithm} Algorithm - K={k}"))
+                travel_time = result.get(f"{algorithm} Algorithm - K={k}")[max_found_k-1].get('Travel Time')
+                path_length = result.get(f"{algorithm} Algorithm - K={k}")[max_found_k-1].get('Path Length')
+                default_speed_distance = result.get(f"{algorithm} Algorithm - K={k}")[max_found_k-1].get('Default Speed Distance')
+                average_speed = result.get(f"{algorithm} Algorithm - K={k}")[max_found_k-1].get('Average Speed')
+
+                # Add the statistics to the totals and increment the counts
+                for statistic, value in [('Time', time), ('Memory', memory), ('CPU', cpu), 
+                                        ('Travel Time', travel_time), ('Path Length', path_length), 
+                                        ('Default Speed Distance', default_speed_distance), 
+                                        ('Average Speed', average_speed)]:
+                    if value is not None:
+                        totals[algorithm][k][statistic] = totals[algorithm][k].get(statistic, 0) + value
+                        counts[algorithm][k][statistic] = counts[algorithm][k].get(statistic, 0) + 1
+
+    # Open the CSV file in write mode
+    with open('average_statistics.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+
+        # Write the header row
+        writer.writerow(['Algorithm', 'K', 'Time', 'Travel Time', 'Path Length', 'Default Speed Distance','Average Speed'])
+
+        # Iterate over the totals and counts
+        for algorithm, k_values in totals.items():
+            for k, statistics in k_values.items():
+                stats_tmp = []
+                for statistic, total in statistics.items():
+                    count = counts[algorithm][k][statistic]
+                    average = total / count
+                    stats_tmp.append(round(average,2))
+                    # Write the average statistic to the CSV file
+                writer.writerow([algorithm, k, stats_tmp[0], stats_tmp[1], stats_tmp[2], stats_tmp[3], stats_tmp[4], average])

@@ -16,7 +16,6 @@ def tests_one_one_k(G, start, end, plot=False):
         start_time = time.time()
         ksp_paths, consumed_memory, consumed_cpu = k_shortest_paths(G, start, end, K, weight='length')
         end_time = time.time()
-        print(f"KSP: {end_time - start_time}")
         yen_time = end_time - start_time
         if ksp_paths is not None:
             ksp_results = []
@@ -38,7 +37,7 @@ def tests_one_one_k(G, start, end, plot=False):
                     ox.plot_graph_route(G, path, route_linewidth=3, node_size=0, bgcolor='k')
                 i += 1
 
-            results[f"Yen's KSP Algorithm - K={K}"] = ksp_results
+            results[f"Yen's Algorithm - K={K}"] = ksp_results
             results[f"Yen's time - K={K}"] = yen_time
             results[f"Yen's memory - K={K}"] = consumed_memory
             results[f"Yen's CPU - K={K}"] = consumed_cpu
@@ -47,7 +46,6 @@ def tests_one_one_k(G, start, end, plot=False):
         dijkstra_paths, consumed_memory, consumed_cpu = dijkstra_k_shortest_paths(G, start, end, K)
         end_time = time.time()
         dijkstra_time = end_time - start_time
-        print(f"Dijkstra: {end_time - start_time}")
         if dijkstra_paths:
             dijkstra_results = []
             i = 1
@@ -74,11 +72,11 @@ def tests_one_one_k(G, start, end, plot=False):
         hoffman_pavley_paths, consumed_memory, consumed_cpu = hoffman_pavley(G, start, end, K)
         end_time = time.time()
         hoffman_pavley_time = end_time - start_time
-        print(f"Hoffman-Pavley: {end_time - start_time}")
         if hoffman_pavley_paths:
             hoffman_pavley_results = []
             i = 1
             for path in hoffman_pavley_paths:
+                path = path[1]
                 hoffman_pavley_result = analyze_path(G, path)
                 hoffman_pavley_results.append({
                     "Path Number": i,

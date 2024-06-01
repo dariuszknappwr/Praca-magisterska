@@ -9,7 +9,7 @@ def initialize_bellman_ford_edge_usage(G):
 def bellman_ford(G, source, weightLabel='length'):
     # Przygotowanie słowników odległości i poprzedników
     distance = dict.fromkeys(G, float('infinity'))
-    distance = {source: 0 for source in G}
+    distance[source] = 0
     pred = {node: None for node in G}
 
     # Relaksacja krawędzi
