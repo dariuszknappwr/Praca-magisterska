@@ -116,7 +116,7 @@ def update_edge_usage_johnson(G, sources_targets_map):
     # Iterate over all pairs of source and target nodes
     for sources in sources_targets_map:
         # funkcja zwraca również wierzchołki None - None, które należy pominąć
-        if sources == None:
+        if sources == None or type(sources) != map:
             continue
         for source, paths in sources.items():
             prev_path_node = None

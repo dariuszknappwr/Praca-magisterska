@@ -32,8 +32,7 @@ from dijkstra import dijkstra
 def main():
     client = MongoClient('mongodb://localhost:27017/')
     db = client['PracaMagisterska']
-    G_many_many_all_algorithm_uses = None
-    for test_number in ['Test18']:
+    for test_number in ['Test15']:
         number_of_pairs = 100
         G = get_test_map(test_number)
         G = set_speed_weigths(G)
@@ -60,7 +59,8 @@ def main():
             elif test_number in ['Test18', 'Test19', 'Test20', 'Test21', 'Test22', 'Test23']:
                 result = tests_one_one_k(G, start, end)
 
-            collection.insert_one(result)
+            #collection.insert_one(result)
+            print(i)
 
 if __name__ == '__main__':
     main()

@@ -18,10 +18,10 @@ def get_test_map(test_number):
         'Test4': 'Maps/Berlin_map.graphml',
         'Test5': 'Maps/Nowy_York_map.graphml',
         'Test6': 'Maps/Zalipie_map.graphml',
-        'Test7': 'Maps/Wroclaw_map.graphml',
-        'Test8': 'Maps/Berlin_map.graphml',
-        'Test9': 'Maps/Lubelskie_map.graphml',
-        'Test10': 'Maps/Nowy_York_map.graphml',
+        'Test7': 'Maps/Nowa_Deba_map.graphml',
+        'Test8': 'Maps/Tczew_map.graphml',
+        'Test9': 'Maps/Ostrowiec_map.graphml',
+        'Test10': 'Maps/Wroclaw_map.graphml',
         'Test11': 'Maps/Zalipie_map.graphml',
         'Test12': 'Maps/Tychowo_map.graphml',
         'Test13': 'Maps/Miloslaw_map.graphml',
@@ -33,9 +33,9 @@ def get_test_map(test_number):
         'Test19': 'Maps/Tychowo_map.graphml',
         'Test20': 'Maps/Miloslaw_map.graphml',
         'Test21': 'Maps/Wadowice_map.graphml',
-        'Test22': 'Maps/Tczew_map.graphml',
-        'Test23': 'Maps/Ostrowiec_map.graphml',
-        'Test24': 'Maps/Wroclaw_map.graphml'
+        'Test22': 'Maps/Plonsk_map.graphml',
+        'Test23': 'Maps/Tczew_map.graphml',
+        'Test24': 'Maps/Ostrowiec_map.graphml'
     }
 
     local_osm_file_path = test_map.get(test_number)

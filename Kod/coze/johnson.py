@@ -4,6 +4,7 @@ from bellman_ford import bellman_ford, initialize_bellman_ford_edge_usage
 import networkx as nx
 from profiler import profile
 
+nx.johnson
 @profile
 def johnson(G, weightLabel='length'):
     dist = {v: 0 for v in G}

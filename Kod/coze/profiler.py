@@ -3,7 +3,7 @@ import os
 import time
 import gc
 
-ENABLE_PROFILING = False
+ENABLE_PROFILING = True
 
 # inner psutil function
 def process_memory():
@@ -35,7 +35,8 @@ def profile(func):
         consumed_memory = mem_after - mem_before
         consumed_cpu = cpu_after - cpu_before
 
-        #print("{}:consumed memory: {:,}".format(func.__name__,mem_before, mem_after, mem_after - mem_before))
+        print("{}:consumed memory: {:,}".format(func.__name__,consumed_memory))
+        print("{}:consumed CPU: {:,}".format(func.__name__,consumed_cpu))
 
         return result, mem_after, consumed_cpu
     return wrapper

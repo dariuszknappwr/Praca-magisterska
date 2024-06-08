@@ -48,7 +48,7 @@ def tests_many_many(G, test_number, iteration_number, plot=False):
     # Initialize 'length' for all edges to zero
     initialize_edge_usage(G)
     start_time = time.time()
-    johnson_distances = johnson(G)
+    johnson_distances = johnson(G)[0]
     end_time = time.time()
     johnsons_algorithm_time = end_time - start_time
 
