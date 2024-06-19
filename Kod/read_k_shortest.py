@@ -10,8 +10,8 @@ client = MongoClient('mongodb://localhost:27017/')
 # Connect to your database
 db = client['PracaMagisterska']
 
-for test_number in ['Test21']:
-    collection = db[test_number]
+for test_number in ['Test18']:
+    collection = db[f"{test_number}_memory"]
 
     results = list(collection.find())
 
@@ -70,7 +70,7 @@ for test_number in ['Test21']:
             writer = csv.writer(file)
 
             # Write the header row
-            writer.writerow(['Algorithm', 'K', 'Time', 'Travel Time', 'Path Length', 'Default Speed Distance','Average Speed'])
+            writer.writerow(['Algorithm', 'K', 'Time', "Memory", "CPU", 'Travel Time', 'Path Length', 'Default Speed Distance','Average Speed'])
 
             # Iterate over the totals and counts
             for algorithm, k_values in totals.items():
@@ -81,7 +81,7 @@ for test_number in ['Test21']:
                         average = total / count
                         stats_tmp.append(round(average,2))
                         # Write the average statistic to the CSV file
-                    writer.writerow([algorithm, k, stats_tmp[0], stats_tmp[1], stats_tmp[2], stats_tmp[3], stats_tmp[4], average])
+                    writer.writerow([algorithm, k, stats_tmp[0], stats_tmp[1], stats_tmp[2], stats_tmp[3], stats_tmp[4], stats_tmp[5], stats_tmp[6]])
 
         # write all results to csv file
         with open(f'{test_number}/all_results.csv', 'w', newline='') as file:

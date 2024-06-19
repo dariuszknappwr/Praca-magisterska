@@ -10,13 +10,13 @@ client = MongoClient('mongodb://localhost:27017/')
 # Connect to your database
 db = client['PracaMagisterska']
 for test_number in ['Test11', 'Test12', 'Test13', 'Test14', 'Test15', 'Test16', 'Test17']:
-    collection = db[test_number]
+    collection = db[f'{test_number}_memory']
 
     results = list(collection.find())
 
     algorithms = ['Floyd-Warshall', 'Johnson\'s']
 
-    statistics_names = ["Time", "Iterations"]#, "Consumed Memory", "Consumed CPU"]
+    statistics_names = ["Time", "Iterations", "Consumed Memory", "Consumed CPU"]
 
     # Initialize a nested dictionary to store the times for each algorithm and each statistic
     i = 0
@@ -26,9 +26,10 @@ for test_number in ['Test11', 'Test12', 'Test13', 'Test14', 'Test15', 'Test16', 
         print(i)
         for algorithm in algorithms:
             for stat in statistics_names:
+                if algorithm == 'Johnson\'s' and (stat == 'Consumed Memory' or stat == 'Consumed CPU'):
+                    times[algorithm][stat].append(result[algorithm + ' Algorithm ' + stat])
+                    continue
                 times[algorithm][stat].append(result[algorithm + ' ' + stat])
-
-
 
     # Open the CSV file in write mode
 

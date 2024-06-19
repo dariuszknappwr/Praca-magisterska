@@ -10,7 +10,7 @@ client = MongoClient('mongodb://localhost:27017/')
 # Connect to your database
 db = client['PracaMagisterska']
 for test_number in ['Test6', 'Test7', 'Test8', 'Test9', 'Test10']:
-    collection = db[test_number]
+    collection = db[f'{test_number}_memory']
 
     results = list(collection.find())
 

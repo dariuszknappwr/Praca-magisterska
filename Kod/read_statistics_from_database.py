@@ -9,14 +9,14 @@ client = MongoClient('mongodb://localhost:27017/')
 
 # Connect to your database
 db = client['PracaMagisterska']
-'''
+
 for test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
-    collection = db[test_number]
+    collection = db[f"{test_number}_memory"]
 
     results = list(collection.find())
 
     algorithms = ['Dijkstra\'s', 'Dijkstra\'s Max Speed', 'Dijkstra\'s Fibonacci', 'A Star Euclidean', 'A Star Manhattan', 'A Star Chebyshev', 'A Star Haversine']
-    statistics_names = ["Time", "Iterations", "Travel Time", "Path Length", "Missing Speed Data Distance", "Average Speed"]
+    statistics_names = ["Time", "Consumed Memory", "Iterations", "Travel Time", "Path Length", "Missing Speed Data Distance", "Average Speed"]
 
     # Initialize a nested dictionary to store the times for each algorithm and each statistic
     i = 0
@@ -205,7 +205,7 @@ for test_number in ['Test1', 'Test2', 'Test3', 'Test4', 'Test5']:
                 else:
                     row.append('No data')
             writer.writerow(row)
-'''
+
 
 
 
